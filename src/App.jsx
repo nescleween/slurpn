@@ -1,6 +1,24 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 
 // ─────────────────────────────────────────────
+// VIEWPORT SCALING — makes the scene fit any screen
+// Design reference: 1440 × 810
+// ─────────────────────────────────────────────
+function useViewport() {
+  const get = () => ({
+    scale:   Math.min(1, window.innerWidth / 1440, window.innerHeight / 810),
+    portrait: window.innerHeight > window.innerWidth,
+  })
+  const [v, setV] = useState(get)
+  useEffect(() => {
+    const onResize = () => setV(get())
+    window.addEventListener('resize', onResize)
+    return () => window.removeEventListener('resize', onResize)
+  }, [])
+  return v
+}
+
+// ─────────────────────────────────────────────
 // CONSTANTS
 // ─────────────────────────────────────────────
 const MAX_CIG_PUFFS = 88 // puffs before cig is done
@@ -1369,6 +1387,7 @@ export default function App() {
   const [sipMsgKey,     setSipMsgKey]     = useState(0)
   const [sipCount,      setSipCount]      = useState(0)
   const cigDone = puffCount > 0 && puffCount % MAX_CIG_PUFFS === 0
+  const { scale, portrait } = useViewport()
 
   // ── Background music ──────────────────────────
   const audioRef = useRef(null)
@@ -1582,7 +1601,37 @@ export default function App() {
     setMuted(next)
   }, [muted])
 
+  if (portrait) return (
+    <div style={{
+      position: 'fixed', inset: 0,
+      background: '#000',
+      display: 'flex', flexDirection: 'column',
+      alignItems: 'center', justifyContent: 'center',
+      fontFamily: "'Press Start 2P', monospace",
+      color: '#ff8800',
+      textAlign: 'center',
+      padding: 24,
+      gap: 20,
+    }}>
+      <div style={{ fontSize: 48 }}>↻</div>
+      <div style={{ fontSize: 11, lineHeight: 2 }}>ROTATE YOUR<br/>DEVICE</div>
+      <div style={{ fontSize: 7, color: '#664400', lineHeight: 2 }}>THIS EXPERIENCE IS<br/>LANDSCAPE ONLY</div>
+    </div>
+  )
+
   return (
+    <div style={{ position: 'fixed', inset: 0, overflow: 'hidden' }}>
+    {/* Scale wrapper — shrinks the entire scene on smaller screens */}
+    <div
+      style={{
+        position: 'absolute',
+        top: 0, left: 0,
+        width:  `${100 / scale}vw`,
+        height: `${100 / scale}vh`,
+        transformOrigin: '0 0',
+        transform: `scale(${scale})`,
+      }}
+    >
     <div
       style={{
         position: 'fixed',
@@ -1711,5 +1760,7 @@ export default function App() {
         cigDone={cigDone}
       />
     </div>
+    </div>{/* end scale wrapper */}
+    </div>{/* end outer overflow container */}
   )
 }
