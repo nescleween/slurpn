@@ -7,7 +7,8 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 function useViewport() {
   const get = () => ({
     scale:   Math.min(1, window.innerWidth / 1440, window.innerHeight / 810),
-    portrait: window.innerHeight > window.innerWidth,
+    // only flag portrait on small screens (real mobile), not narrow desktop windows
+    portrait: window.innerHeight > window.innerWidth && window.innerWidth < 1024,
   })
   const [v, setV] = useState(get)
   useEffect(() => {
@@ -1601,25 +1602,32 @@ export default function App() {
     setMuted(next)
   }, [muted])
 
-  if (portrait) return (
-    <div style={{
-      position: 'fixed', inset: 0,
-      background: '#000',
-      display: 'flex', flexDirection: 'column',
-      alignItems: 'center', justifyContent: 'center',
-      fontFamily: "'Press Start 2P', monospace",
-      color: '#ff8800',
-      textAlign: 'center',
-      padding: 24,
-      gap: 20,
-    }}>
-      <div style={{ fontSize: 48 }}>↻</div>
-      <div style={{ fontSize: 11, lineHeight: 2 }}>ROTATE YOUR<br/>DEVICE</div>
-      <div style={{ fontSize: 7, color: '#664400', lineHeight: 2 }}>THIS EXPERIENCE IS<br/>LANDSCAPE ONLY</div>
-    </div>
-  )
-
   return (
+    <>
+    {/* ── Audio — always mounted so music survives portrait/landscape switch ── */}
+    <audio ref={audioRef} src="/sounds/bgmusic.mp3" loop preload="auto" />
+    <audio ref={puffAudioRef} src="/sounds/puff_sound.ogg" preload="auto" />
+    <audio ref={slurpAudioRef} src="/sounds/energyslurp.ogg" preload="auto" />
+    <audio ref={burpAudioRef} src="/sounds/burp.ogg" preload="auto" />
+    <audio ref={coughAudioRef} src="/sounds/coughing.ogg" preload="auto" />
+
+    {portrait ? (
+      <div style={{
+        position: 'fixed', inset: 0,
+        background: '#000',
+        display: 'flex', flexDirection: 'column',
+        alignItems: 'center', justifyContent: 'center',
+        fontFamily: "'Press Start 2P', monospace",
+        color: '#ff8800',
+        textAlign: 'center',
+        padding: 24,
+        gap: 20,
+      }}>
+        <div style={{ fontSize: 48 }}>&#x21BB;</div>
+        <div style={{ fontSize: 11, lineHeight: 2 }}>ROTATE YOUR<br/>DEVICE</div>
+        <div style={{ fontSize: 7, color: '#664400', lineHeight: 2 }}>THIS EXPERIENCE IS<br/>LANDSCAPE ONLY</div>
+      </div>
+    ) : (
     <div style={{ position: 'fixed', inset: 0, overflow: 'hidden' }}>
     {/* Scale wrapper — shrinks the entire scene on smaller screens */}
     <div
@@ -1641,12 +1649,6 @@ export default function App() {
         animation: shaking ? 'screenShake 0.7s ease-out' : 'none',
       }}
     >
-      {/* ── Background music ── */}
-      <audio ref={audioRef} src="/sounds/bgmusic.mp3" loop preload="auto" />
-      <audio ref={puffAudioRef} src="/sounds/puff_sound.ogg" preload="auto" />
-      <audio ref={slurpAudioRef} src="/sounds/energyslurp.ogg" preload="auto" />
-      <audio ref={burpAudioRef}   src="/sounds/burp.ogg"         preload="auto" />
-      <audio ref={coughAudioRef}  src="/sounds/coughing.ogg"    preload="auto" />
 
       {/* ── Mute toggle ── */}
       <button
@@ -1760,7 +1762,9 @@ export default function App() {
         cigDone={cigDone}
       />
     </div>
-    </div>{/* end scale wrapper */}
-    </div>{/* end outer overflow container */}
+    </div>
+    </div>
+    )}
+    </>
   )
 }
