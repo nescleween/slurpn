@@ -1,0 +1,9 @@
+node_modules/
+dist/
+.DS_Store
+
+# Videos are too large for GitHub (gasclips.mp4 = 753MB)
+# Store them locally and add manually if needed via Git LFS
+*.mp4
+*.mov
+*.avi
