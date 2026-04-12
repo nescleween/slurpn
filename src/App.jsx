@@ -754,7 +754,7 @@ function Scene({ isInhaling, puffCount }) {
           flexShrink: 0,
         }}>
           <video
-            src="/gasclips.mp4"
+            src="https://pub-db102f8987b746139ff040a15b163a4e.r2.dev/gasclips.mp4"
             autoPlay
             loop
             muted
