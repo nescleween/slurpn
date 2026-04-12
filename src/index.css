@@ -60,6 +60,13 @@ body {
   100% { opacity: 0; transform: translateX(-50%) translateY(-50px); }
 }
 
+@keyframes sipMessageFloat {
+  0%   { opacity: 0; transform: translateY(10px); }
+  15%  { opacity: 1; transform: translateY(0); }
+  70%  { opacity: 1; }
+  100% { opacity: 0; transform: translateY(-50px); }
+}
+
 @keyframes handBob {
   0%, 100% { transform: translateX(-50%) translateY(0px); }
   50%       { transform: translateX(-50%) translateY(-6px); }

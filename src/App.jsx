@@ -291,8 +291,6 @@ function Hand({ handPhase, puffCount, onClick }) {
           <ellipse cx="129" cy="128" rx="10" ry="4.5" fill="#7a3010" fillOpacity="0.18"/>
 
           {/* ══════════ INTER-FINGER WEB SHADOWS ══════════ */}
-          <path fill="#6a2e08" fillOpacity="0.22"
-            d="M 151 342 L 183 344 L 184 332 Q 168 326 150 332 Z"/>
           <path fill="#6a2e08" fillOpacity="0.18"
             d="M 218 344 L 212 348 L 214 334 Q 216 330 220 334 Z"/>
           <path fill="#6a2e08" fillOpacity="0.15"
@@ -370,6 +368,7 @@ function Hand({ handPhase, puffCount, onClick }) {
           </g>
 
           {/* ══════════ TATTOO — big trashy skull ══════════ */}
+          <g transform="translate(0, 10)">
           {/* blurred shadow */}
           <g transform="rotate(-5, 200, 462)" opacity="0.30" filter="url(#softBlur)">
             <rect x={180} y={418} width={40} height={80} fill="#100818"/>
@@ -427,18 +426,63 @@ function Hand({ handPhase, puffCount, onClick }) {
             {/* tiny 3-dot motif beside each cross */}
             {[-1, 0, 1].map(d => <rect key={d} x={136} y={465 + d*6} width={3} height={3} fill="#120820"/>)}
             {[-1, 0, 1].map(d => <rect key={d} x={255} y={465 + d*6} width={3} height={3} fill="#120820"/>)}
-            {/* ── SLURPN banner ── */}
-            <rect x={128} y={494} width={130} height={26} fill="#120820"/>
-            <rect x={130} y={496} width={126} height={22} fill="#c8984a" opacity="0.78"/>
+            {/* ── SLURPN text ── */}
             <text
               x={204} y={515}
               textAnchor="middle"
               fontFamily="'Press Start 2P', monospace"
               fontSize="17"
-              fill="#0d0518"
+              fill="#120820"
               style={{ letterSpacing: '1px' }}
             >SLURPN</text>
           </g>
+          </g>{/* end tattoo translate */}
+
+          {/* ══════════ WATCH — at the very bottom of the hand ══════════ */}
+          <g transform="translate(0, 58)">
+          {/* band left side */}
+          <rect x={82}  y={508} width={75}  height={52} rx={5} fill="#1a0c04"/>
+          <rect x={86}  y={512} width={67}  height={44} rx={4}
+            fill="none" stroke="#3d1e08" strokeWidth={1.2} strokeOpacity={0.65} strokeDasharray="5,4"/>
+
+          {/* band right side + buckle */}
+          <rect x={247} y={508} width={82}  height={52} rx={5} fill="#1a0c04"/>
+          <rect x={251} y={512} width={74}  height={44} rx={4}
+            fill="none" stroke="#3d1e08" strokeWidth={1.2} strokeOpacity={0.65} strokeDasharray="5,4"/>
+          {/* buckle bar */}
+          <rect x={322} y={524} width={10} height={20} rx={4} fill="#666"/>
+          <rect x={324} y={526} width={6}  height={16} rx={3} fill="#999"/>
+          <rect x={326} y={531} width={5}  height={6}  rx={2} fill="#bbb"/>
+
+          {/* watch case — thick metal bezel */}
+          <rect x={148} y={496} width={108} height={76} rx={9} fill="#606060"/>
+          <rect x={151} y={499} width={102} height={70} rx={8} fill="#c0c0c0"/>
+          {/* case top highlight */}
+          <rect x={152} y={500} width={100} height={14} rx={7} fill="#ffffff" opacity={0.25}/>
+          {/* crown buttons right side */}
+          <rect x={255} y={516} width={9}  height={14} rx={4} fill="#888"/>
+          <rect x={256} y={518} width={7}  height={10} rx={3} fill="#aaa"/>
+          <rect x={255} y={536} width={9}  height={10} rx={4} fill="#888"/>
+          <rect x={256} y={537} width={7}  height={8}  rx={3} fill="#aaa"/>
+
+          {/* watch face — dark LCD screen */}
+          <rect x={155} y={503} width={94} height={62} rx={5} fill="#040804"/>
+          <rect x={155} y={503} width={94} height={62} rx={5} fill="#002800" opacity={0.4}/>
+          {/* screen inner glow */}
+          <rect x={157} y={505} width={90} height={10} rx={3} fill="#004400" opacity={0.3}/>
+
+          {/* LCD time display */}
+          <text x={202} y={541} textAnchor="middle"
+            fontFamily="'Press Start 2P', monospace" fontSize={18}
+            fill="#00ff44"
+            style={{ filter: 'drop-shadow(0 0 4px #00ff44) drop-shadow(0 0 8px #00cc33)' }}>
+            8:88
+          </text>
+          {/* AM label */}
+          <text x={233} y={554} textAnchor="middle"
+            fontFamily="'Press Start 2P', monospace" fontSize={6}
+            fill="#00bb33" opacity={0.85}>AM</text>
+          </g>{/* end watch translate */}
 
           {/* ══════════ EMBER ══════════ */}
           <g style={{ animation: isInhaling ? 'emberBright 0.12s ease-in-out infinite' : 'emberPulse 0.85s ease-in-out infinite' }}>
@@ -800,10 +844,10 @@ function Scene({ isInhaling, puffCount }) {
         padding: '10px 9px',
         boxShadow: '0 0 10px rgba(180,40,0,0.2)',
       }}>
-        <div style={{ marginBottom: 4, color: '#ff7700', letterSpacing: 2 }}>D_RRY</div>
-        <div style={{ color: '#994400' }}>REG  $6.66</div>
-        <div style={{ color: '#994400' }}>MID  $_.77</div>
-        <div style={{ color: '#994400' }}>PRE  $8.88</div>
+        <div style={{ marginBottom: 4, color: '#ff7700', letterSpacing: 2 }}>CLOWN EGGS</div>
+        <div style={{ color: '#994400' }}>REG  $26.66</div>
+        <div style={{ color: '#994400' }}>MID  $47.21</div>
+        <div style={{ color: '#994400' }}>PRE  $88.88</div>
         <div style={{ marginTop: 8, fontSize: '10px', color: '#661100', animation: 'blink 2s step-end infinite' }}>CASH ONLY</div>
         <div style={{ fontSize: '10px', color: '#880000', animation: 'blink 0.9s step-end infinite' }}>NO REFUNDS</div>
       </div>
@@ -884,7 +928,7 @@ function CRTOverlay({ flashing, flashKey }) {
 // ─────────────────────────────────────────────
 // HUD
 // ─────────────────────────────────────────────
-function HUD({ puffCount, message, msgKey, cigDone }) {
+function HUD({ puffCount, sipCount, message, msgKey, cigDone }) {
   const T = { fontFamily: "'Press Start 2P', monospace" }
 
   return (
@@ -902,6 +946,22 @@ function HUD({ puffCount, message, msgKey, cigDone }) {
         <div style={{ fontSize: 9, color: '#ff8800', textShadow: '0 0 8px #ff8800' }}>PUFFS</div>
         <div style={{ fontSize: 22, color: '#ffcc00', textShadow: '0 0 14px #ffcc00' }}>
           {String(puffCount).padStart(3, '0')}
+        </div>
+      </div>
+
+      {/* Sip counter */}
+      <div style={{
+        ...T,
+        position: 'fixed',
+        top: 16,
+        left: 100,
+        zIndex: 80,
+        pointerEvents: 'none',
+        lineHeight: 2,
+      }}>
+        <div style={{ fontSize: 9, color: '#00cc44', textShadow: '0 0 8px #00cc44' }}>SIPS</div>
+        <div style={{ fontSize: 22, color: '#00ff88', textShadow: '0 0 14px #00ff88' }}>
+          {String(sipCount).padStart(3, '0')}
         </div>
       </div>
 
@@ -935,7 +995,7 @@ function HUD({ puffCount, message, msgKey, cigDone }) {
             fontSize: 9,
             color: '#00ffcc',
             textShadow: '0 0 12px #00ffcc, 0 0 24px #00aa88',
-            animation: 'messageFloat 4.5s ease-out forwards',
+            animation: 'messageFloat 7s ease-out forwards',
             whiteSpace: 'nowrap',
             pointerEvents: 'none',
             zIndex: 80,
@@ -1025,22 +1085,22 @@ function ExhaleBlob({ cx, cy, size, driftX, driftY, dur, delay, opacity, animNam
 // SIP MESSAGES
 // ─────────────────────────────────────────────
 const SIP_MESSAGES = [
-  'GAMER FUEL ACQUIRED',
-  'MY HEART IS SO FAST',
-  'I CAN SEE WIFI',
-  'TEETH VIBRATING',
-  '666 MG CAFFEINE',
-  'WINGS: ACTIVATED',
+  'THE FUTURE AINT WHAT IT USED TO BE',
+  'MY MENTOR HAS JAUNDICE',
+  'I OWE GUTNIK MONEY',
+  'IMMA WHOOP YA ASS',
+  'MY LEFT PENIS HURTS',
+  'BEEF BIRD 2 IS OUT NEXT WEEK',
   'SLEEP IS FOR THE WEAK',
-  'IS THIS LEGAL',
-  'STOMACH MAKING NOISES',
+  'MY GRIP IS EXCELLENT',
+  'GOT A HEAD LIKE A LAMP',
   'I LOVE CHEMICALS',
-  'TAURINE: ABSORBED',
-  'FEELING ELECTRIC',
-  'MY EYES ARE DRY',
-  'WHAT IS IN THIS',
-  'GAMER MODE: ON',
-  'HEART GOING BRRR',
+  'NO MORE CRYING FOR ME',
+  "HAVE YOU EVER STOPPED — TRULY STOPPED, LET YOUR BONES GO QUIET — TO WATCH A BLUEBIRD DROP FROM A DTREEM AND TAKE TO THE DAMN AIR? HAVE YOU WATCHED IT FALL UPWARD INTO THE BELOW-SKY, ITS WINGS MADE OF SOMEONE ELSE'S TEETH, ITS SONG A TELEPHONE NUMBER YOU KEEP ALMOST REMEMBERING? THE DTREEM DOES NOT MISS IT. THE DTREEM HAS FORTY-SEVEN MOUTHS AND NONE OF THEM ARE SPEAKING TO YOU ANYMORE. THE BIRD IS NOT FLYING. THE BIRD HAS NEVER FLOWN. THE BIRD IS A DOOR THAT OPENS INTO ANOTHER BIRD. THERE IS ALWAYS ANOTHER BIRD. YOU HAVE BEEN STANDING IN THIS FIELD FOR ELEVEN YEARS AND YOUR SHADOW IS POINTING THE WRONG DIRECTION AND THE AIR THE DAMN AIR TASTES LIKE A WEDNESDAY FROM A LIFE YOU DID NOT LIVE AND THE BLUEBIRD LOOKS BACK AT YOU AND IT HAS YOUR MOTHER'S HANDWRITING AND IT SAYS YOUR NAME BUT SPELLED INCORRECTLY IN A WAY THAT FEELS MORE ACCURATE AND YOU CANNOT MOVE BECAUSE YOU UNDERSTAND NOW THAT YOU WERE NEVER WATCHING THE BIRD — THE BIRD HAS BEEN WATCHING THE THING STANDING BEHIND YOU THIS WHOLE TIME.",
+  'IM A SHORTSLEEVED CREATURE',
+  'HERMAN CAIN MAXIMUM PAIN',
+  'MANAPUMPER',
+  "CAN'T BELIEVE I UNLOCK HIGH SCEPTOR",
 ]
 
 // ─────────────────────────────────────────────
@@ -1082,8 +1142,8 @@ function FizzBubble({ x, y, onDone }) {
 // ─────────────────────────────────────────────
 function LeftHand({ leftHandPhase, onClick }) {
   const animStyle =
-    leftHandPhase === 'sip'    ? { animation: 'leftHandSip 0.38s ease-out forwards' } :
-    leftHandPhase === 'return' ? { animation: 'leftHandReturn 1.2s cubic-bezier(0.22,1,0.36,1) forwards' } :
+    leftHandPhase === 'sip'    ? { animation: 'leftHandSip 0.20s ease-out forwards' } :
+    leftHandPhase === 'return' ? { animation: 'leftHandReturn 0.5s cubic-bezier(0.25,0.46,0.45,0.94) forwards' } :
     { animation: 'leftHandBob 3.8s ease-in-out 0.9s infinite' }
 
   return (
@@ -1142,29 +1202,19 @@ function LeftHand({ leftHandPhase, onClick }) {
                 The can (drawn next) covers their left halves automatically. */}
             {/* Index knuckle */}
             <ellipse cx={192} cy={170} rx={38} ry={20} fill="url(#LgKnuckle)"/>
-            {/* knuckle highlight */}
             <ellipse cx={208} cy={163} rx={14} ry={9}  fill="#f8e0b0" opacity={0.50}/>
-            {/* nail */}
-            <ellipse cx={214} cy={161} rx={10} ry={7}  fill="#f0dcc0" opacity={0.72}/>
-            <ellipse cx={213} cy={160} rx={8}  ry={5}  fill="#ffffff" opacity={0.34}/>
 
             {/* Middle knuckle */}
             <ellipse cx={194} cy={214} rx={40} ry={20} fill="url(#LgKnuckle)"/>
             <ellipse cx={210} cy={207} rx={15} ry={9}  fill="#f8e0b0" opacity={0.46}/>
-            <ellipse cx={216} cy={205} rx={10} ry={7}  fill="#f0dcc0" opacity={0.68}/>
-            <ellipse cx={215} cy={204} rx={8}  ry={5}  fill="#ffffff" opacity={0.32}/>
 
             {/* Ring knuckle */}
             <ellipse cx={192} cy={256} rx={37} ry={19} fill="url(#LgKnuckle)"/>
             <ellipse cx={207} cy={249} rx={14} ry={8}  fill="#f8e0b0" opacity={0.42}/>
-            <ellipse cx={213} cy={247} rx={9}  ry={6}  fill="#f0dcc0" opacity={0.64}/>
-            <ellipse cx={212} cy={246} rx={7}  ry={4.5} fill="#ffffff" opacity={0.30}/>
 
             {/* Pinky knuckle */}
             <ellipse cx={186} cy={294} rx={30} ry={16} fill="url(#LgKnuckle)"/>
             <ellipse cx={199} cy={287} rx={11} ry={7}  fill="#f8e0b0" opacity={0.38}/>
-            <ellipse cx={204} cy={285} rx={8}  ry={5}  fill="#f0dcc0" opacity={0.60}/>
-            <ellipse cx={203} cy={284} rx={6}  ry={3.5} fill="#ffffff" opacity={0.28}/>
 
             {/* shadow trenches between knuckles */}
             <path fill="#2a0a00" fillOpacity={0.38}
@@ -1198,20 +1248,50 @@ function LeftHand({ leftHandPhase, onClick }) {
             <rect x={88} y={130} width={84} height={168} fill="#080808"/>
             {/* bottom green stripe */}
             <rect x={88} y={298} width={84} height={10} fill="#00ff44"/>
-            {/* SLURPN */}
-            <text x={130} y={168} textAnchor="middle"
-              fontFamily="'Press Start 2P', monospace" fontSize={9}
-              fill="#00ff44" style={{letterSpacing:'0.5px'}}>SLURPN</text>
-            {/* ENRGY */}
-            <text x={130} y={184} textAnchor="middle"
+            {/* ABSOLUTE CRAP */}
+            <text x={130} y={163} textAnchor="middle"
+              fontFamily="'Press Start 2P', monospace" fontSize={7}
+              fill="#00ff44" style={{letterSpacing:'0.5px'}}>ABSOLUTE</text>
+            <text x={130} y={175} textAnchor="middle"
+              fontFamily="'Press Start 2P', monospace" fontSize={7}
+              fill="#00ff44" style={{letterSpacing:'0.5px'}}>CRAP</text>
+            {/* ENERGY */}
+            <text x={130} y={187} textAnchor="middle"
               fontFamily="'Press Start 2P', monospace" fontSize={6}
-              fill="#00cc33">ENRGY</text>
+              fill="#00cc33">ENERGY</text>
             {/* pixel lightning bolt */}
             <rect x={122} y={194} width={5}  height={5} fill="#00ff44"/>
             <rect x={118} y={199} width={5}  height={5} fill="#00ff44"/>
             <rect x={122} y={204} width={10} height={5} fill="#00ff44"/>
             <rect x={118} y={209} width={5}  height={5} fill="#00ff44"/>
             <rect x={122} y={214} width={5}  height={5} fill="#00ff44"/>
+            {/* poop emoji */}
+            <g>
+              {/* swirl top — tiny tip */}
+              <rect x={128} y={228} width={4}  height={2}  fill="#5c3317"/>
+              <rect x={126} y={230} width={8}  height={2}  fill="#5c3317"/>
+              <rect x={124} y={232} width={12} height={3}  fill="#6b3d1e"/>
+              {/* swirl mid */}
+              <rect x={120} y={235} width={20} height={4}  fill="#7a4520"/>
+              <rect x={118} y={239} width={24} height={4}  fill="#6b3d1e"/>
+              {/* base — widest */}
+              <rect x={116} y={243} width={28} height={4}  fill="#7a4520"/>
+              <rect x={118} y={247} width={24} height={3}  fill="#6b3d1e"/>
+              <rect x={120} y={250} width={20} height={2}  fill="#5c3317"/>
+              {/* eyes — white sclera + black pupils */}
+              <rect x={121} y={237} width={4}  height={4}  fill="#ffffff"/>
+              <rect x={135} y={237} width={4}  height={4}  fill="#ffffff"/>
+              <rect x={122} y={238} width={2}  height={2}  fill="#111111"/>
+              <rect x={136} y={238} width={2}  height={2}  fill="#111111"/>
+              {/* smile */}
+              <rect x={122} y={244} width={2}  height={2}  fill="#3a1e08"/>
+              <rect x={124} y={246} width={2}  height={2}  fill="#3a1e08"/>
+              <rect x={126} y={247} width={6}  height={2}  fill="#3a1e08"/>
+              <rect x={132} y={246} width={2}  height={2}  fill="#3a1e08"/>
+              <rect x={134} y={244} width={2}  height={2}  fill="#3a1e08"/>
+              {/* shine highlight */}
+              <rect x={130} y={230} width={3}  height={2}  fill="#9b5e30" opacity={0.6}/>
+            </g>
             {/* 666 ML */}
             <text x={130} y={272} textAnchor="middle"
               fontFamily="'Press Start 2P', monospace" fontSize={5}
@@ -1235,6 +1315,13 @@ function LeftHand({ leftHandPhase, onClick }) {
             {/* knuckle fold crease */}
             <path fill="none" stroke="#8a4820" strokeWidth={1.4} strokeOpacity={0.30}
               d="M 74 204 Q 122 198 170 205"/>
+            {/* thumbnail — right side of thumb, pulled inward from tip */}
+            <ellipse cx={163} cy={208} rx={13} ry={10} fill="#e8d8b8" opacity={0.90}/>
+            <ellipse cx={163} cy={206} rx={11} ry={8}  fill="#f5edd8" opacity={0.80}/>
+            <ellipse cx={163} cy={205} rx={8}  ry={5}  fill="#ffffff" opacity={0.55}/>
+            {/* nail base shadow */}
+            <path fill="none" stroke="#8a6040" strokeWidth={1.2} strokeOpacity={0.35}
+              d="M 156 212 Q 163 216 170 212"/>
             {/* thumb hair */}
             <g fill="none" stroke="#4a2006" strokeLinecap="round">
               <path strokeWidth="0.9" strokeOpacity="0.18" d="M 96 196 Q 102 187 106 196"/>
@@ -1280,11 +1367,15 @@ export default function App() {
   const [fizzBubbles,   setFizzBubbles]   = useState([])
   const [sipMessage,    setSipMessage]    = useState('')
   const [sipMsgKey,     setSipMsgKey]     = useState(0)
+  const [sipCount,      setSipCount]      = useState(0)
   const cigDone = puffCount > 0 && puffCount % MAX_CIG_PUFFS === 0
 
   // ── Background music ──────────────────────────
   const audioRef = useRef(null)
   const puffAudioRef = useRef(null)
+  const slurpAudioRef = useRef(null)
+  const burpAudioRef = useRef(null)
+  const coughAudioRef = useRef(null)
   const audioStarted = useRef(false)
 
   const startAudio = useCallback(() => {
@@ -1354,19 +1445,36 @@ export default function App() {
 
   const handleSip = useCallback(() => {
     startAudio()
+    if (slurpAudioRef.current) {
+      slurpAudioRef.current.currentTime = 0
+      slurpAudioRef.current.volume = 0.35
+      slurpAudioRef.current.play().catch(() => {})
+    }
+    setSipCount(c => {
+      const next = c + 1
+      if (next % 3 === 0 && burpAudioRef.current) {
+        setTimeout(() => {
+          burpAudioRef.current.currentTime = 0
+          burpAudioRef.current.play().catch(() => {})
+        }, 600)
+      }
+      return next
+    })
     setLeftHandPhase('sip')
-    const canX = window.innerWidth * 0.01 + 130
-    const canY = window.innerHeight - 462
+    // Can top-center after rotate(25deg) around div bottom-center (screen x=110):
+    // unrotated: (100, H-378), rotated result: (~307, H-336)
+    const canX = 307
+    const canY = window.innerHeight - 336
     const bubbles = Array.from({ length: 14 }, () => ({
       id: ++_pid,
-      x: canX + (Math.random() - 0.5) * 35,
-      y: canY + Math.random() * 15,
+      x: canX + (Math.random() - 0.5) * 28,
+      y: canY + Math.random() * 10,
     }))
     setFizzBubbles(prev => [...prev, ...bubbles])
     setSipMessage(SIP_MESSAGES[Math.floor(Math.random() * SIP_MESSAGES.length)])
     setSipMsgKey(k => k + 1)
-    setTimeout(() => setLeftHandPhase('return'), 420)
-    setTimeout(() => setLeftHandPhase('rest'),   420 + 1200)
+    setTimeout(() => setLeftHandPhase('return'), 240)
+    setTimeout(() => setLeftHandPhase('rest'),   240 + 500)
   }, [startAudio])
 
   const spawnExhaleBlobs = useCallback(() => {
@@ -1453,6 +1561,12 @@ export default function App() {
         setShaking(true)
         setTimeout(() => setShaking(false), 700)
       }
+      if (next % 3 === 0 && coughAudioRef.current) {
+        setTimeout(() => {
+          coughAudioRef.current.currentTime = 0
+          coughAudioRef.current.play().catch(() => {})
+        }, 800)
+      }
       return next
     })
 
@@ -1481,6 +1595,9 @@ export default function App() {
       {/* ── Background music ── */}
       <audio ref={audioRef} src="/sounds/bgmusic.mp3" loop preload="auto" />
       <audio ref={puffAudioRef} src="/sounds/puff_sound.ogg" preload="auto" />
+      <audio ref={slurpAudioRef} src="/sounds/energyslurp.ogg" preload="auto" />
+      <audio ref={burpAudioRef}   src="/sounds/burp.ogg"         preload="auto" />
+      <audio ref={coughAudioRef}  src="/sounds/coughing.ogg"    preload="auto" />
 
       {/* ── Mute toggle ── */}
       <button
@@ -1566,14 +1683,16 @@ export default function App() {
           key={sipMsgKey}
           style={{
             position: 'fixed',
-            bottom: 260,
-            left: '18%',
+            bottom: sipMessage.length > 100 ? 160 : 260,
+            left: '22%',
+            width: sipMessage.length > 100 ? '45vw' : 'auto',
             fontFamily: "'Press Start 2P', monospace",
-            fontSize: 9,
+            fontSize: sipMessage.length > 300 ? 6 : sipMessage.length > 100 ? 7 : 9,
+            lineHeight: 1.8,
             color: '#00ff88',
             textShadow: '0 0 12px #00ff88, 0 0 24px #00aa44',
-            animation: 'messageFloat 4.5s ease-out forwards',
-            whiteSpace: 'nowrap',
+            animation: 'sipMessageFloat 7s ease-out forwards',
+            whiteSpace: sipMessage.length > 100 ? 'normal' : 'nowrap',
             pointerEvents: 'none',
             zIndex: 80,
           }}
@@ -1586,6 +1705,7 @@ export default function App() {
 
       <HUD
         puffCount={puffCount}
+        sipCount={sipCount}
         message={message}
         msgKey={msgKey}
         cigDone={cigDone}
