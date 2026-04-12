@@ -1022,6 +1022,242 @@ function ExhaleBlob({ cx, cy, size, driftX, driftY, dur, delay, opacity, animNam
 }
 
 // ─────────────────────────────────────────────
+// SIP MESSAGES
+// ─────────────────────────────────────────────
+const SIP_MESSAGES = [
+  'GAMER FUEL ACQUIRED',
+  'MY HEART IS SO FAST',
+  'I CAN SEE WIFI',
+  'TEETH VIBRATING',
+  '666 MG CAFFEINE',
+  'WINGS: ACTIVATED',
+  'SLEEP IS FOR THE WEAK',
+  'IS THIS LEGAL',
+  'STOMACH MAKING NOISES',
+  'I LOVE CHEMICALS',
+  'TAURINE: ABSORBED',
+  'FEELING ELECTRIC',
+  'MY EYES ARE DRY',
+  'WHAT IS IN THIS',
+  'GAMER MODE: ON',
+  'HEART GOING BRRR',
+]
+
+// ─────────────────────────────────────────────
+// FIZZ BUBBLE
+// ─────────────────────────────────────────────
+function FizzBubble({ x, y, onDone }) {
+  const size  = Math.random() * 10 + 5
+  const drift = (Math.random() - 0.5) * 44
+  const dur   = Math.random() * 0.6 + 0.8
+  const delay = Math.random() * 0.35
+
+  useEffect(() => {
+    const t = setTimeout(onDone, (dur + delay) * 1000 + 100)
+    return () => clearTimeout(t)
+  }, []) // eslint-disable-line
+
+  return (
+    <div style={{
+      position: 'fixed',
+      left: x - size / 2,
+      top:  y - size / 2,
+      width: size,
+      height: size,
+      borderRadius: '50%',
+      background: `rgba(180,255,200,${(Math.random() * 0.3 + 0.5).toFixed(2)})`,
+      pointerEvents: 'none',
+      zIndex: 15,
+      '--drift': `${drift}px`,
+      animation: `fizzRise ${dur}s ease-out ${delay}s forwards`,
+    }} />
+  )
+}
+
+// ─────────────────────────────────────────────
+// LEFT HAND — gripping energy drink can
+// Reference: handref.png
+//   C-shape grip: thumb left, knuckles right,
+//   palm wraps below, can sits in front
+// ─────────────────────────────────────────────
+function LeftHand({ leftHandPhase, onClick }) {
+  const animStyle =
+    leftHandPhase === 'sip'    ? { animation: 'leftHandSip 0.38s ease-out forwards' } :
+    leftHandPhase === 'return' ? { animation: 'leftHandReturn 1.2s cubic-bezier(0.22,1,0.36,1) forwards' } :
+    { animation: 'leftHandBob 3.8s ease-in-out 0.9s infinite' }
+
+  return (
+    <div style={{
+      position: 'fixed',
+      bottom: '-110px',
+      left: '-30px',
+      width: '280px',
+      zIndex: 25,
+      transform: 'rotate(25deg)',
+      transformOrigin: 'bottom center',
+      pointerEvents: 'none',
+    }}>
+      <div style={{
+        pointerEvents: 'auto',
+        cursor: 'crosshair',
+        filter: 'contrast(1.08) saturate(0.88)',
+        ...animStyle,
+      }} onClick={onClick}>
+        <svg width="260" height="560" viewBox="0 0 260 560"
+          style={{ display: 'block', overflow: 'visible' }}>
+          <defs>
+            <linearGradient id="LcanBody" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%"   stopColor="#1a1a1a"/>
+              <stop offset="22%"  stopColor="#242424"/>
+              <stop offset="55%"  stopColor="#111111"/>
+              <stop offset="100%" stopColor="#060606"/>
+            </linearGradient>
+            <linearGradient id="LcanRim" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%"   stopColor="#888"/>
+              <stop offset="35%"  stopColor="#ddd"/>
+              <stop offset="65%"  stopColor="#aaa"/>
+              <stop offset="100%" stopColor="#666"/>
+            </linearGradient>
+            {/* knuckle tops — slightly darker, side-lit */}
+            <linearGradient id="LgKnuckle" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%"   stopColor="#d09050"/>
+              <stop offset="50%"  stopColor="#e8aa68"/>
+              <stop offset="100%" stopColor="#f0c080"/>
+            </linearGradient>
+            {/* thumb — dorsal surface, top-lit */}
+            <linearGradient id="LgThumb" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%"   stopColor="#fce8c0"/>
+              <stop offset="45%"  stopColor="#e8aa68"/>
+              <stop offset="100%" stopColor="#9a4c18"/>
+            </linearGradient>
+            <filter id="LhandShadow" x="-20%" y="-10%" width="155%" height="130%">
+              <feDropShadow dx="-4" dy="9" stdDeviation="7" floodColor="#00000070"/>
+            </filter>
+          </defs>
+
+          <g filter="url(#LhandShadow)">
+
+            {/* ══ 3. FOUR KNUCKLE BUMPS — right side, behind can ══
+                Ellipses centered just past the can's right edge (x≈188).
+                The can (drawn next) covers their left halves automatically. */}
+            {/* Index knuckle */}
+            <ellipse cx={192} cy={170} rx={38} ry={20} fill="url(#LgKnuckle)"/>
+            {/* knuckle highlight */}
+            <ellipse cx={208} cy={163} rx={14} ry={9}  fill="#f8e0b0" opacity={0.50}/>
+            {/* nail */}
+            <ellipse cx={214} cy={161} rx={10} ry={7}  fill="#f0dcc0" opacity={0.72}/>
+            <ellipse cx={213} cy={160} rx={8}  ry={5}  fill="#ffffff" opacity={0.34}/>
+
+            {/* Middle knuckle */}
+            <ellipse cx={194} cy={214} rx={40} ry={20} fill="url(#LgKnuckle)"/>
+            <ellipse cx={210} cy={207} rx={15} ry={9}  fill="#f8e0b0" opacity={0.46}/>
+            <ellipse cx={216} cy={205} rx={10} ry={7}  fill="#f0dcc0" opacity={0.68}/>
+            <ellipse cx={215} cy={204} rx={8}  ry={5}  fill="#ffffff" opacity={0.32}/>
+
+            {/* Ring knuckle */}
+            <ellipse cx={192} cy={256} rx={37} ry={19} fill="url(#LgKnuckle)"/>
+            <ellipse cx={207} cy={249} rx={14} ry={8}  fill="#f8e0b0" opacity={0.42}/>
+            <ellipse cx={213} cy={247} rx={9}  ry={6}  fill="#f0dcc0" opacity={0.64}/>
+            <ellipse cx={212} cy={246} rx={7}  ry={4.5} fill="#ffffff" opacity={0.30}/>
+
+            {/* Pinky knuckle */}
+            <ellipse cx={186} cy={294} rx={30} ry={16} fill="url(#LgKnuckle)"/>
+            <ellipse cx={199} cy={287} rx={11} ry={7}  fill="#f8e0b0" opacity={0.38}/>
+            <ellipse cx={204} cy={285} rx={8}  ry={5}  fill="#f0dcc0" opacity={0.60}/>
+            <ellipse cx={203} cy={284} rx={6}  ry={3.5} fill="#ffffff" opacity={0.28}/>
+
+            {/* shadow trenches between knuckles */}
+            <path fill="#2a0a00" fillOpacity={0.38}
+              d="M 155 191 Q 195 188 230 194 Q 195 198 155 195 Z"/>
+            <path fill="#2a0a00" fillOpacity={0.33}
+              d="M 153 232 Q 194 229 232 236 Q 194 240 153 237 Z"/>
+            <path fill="#2a0a00" fillOpacity={0.28}
+              d="M 155 272 Q 193 269 226 275 Q 193 279 155 276 Z"/>
+
+            {/* ══ 4. CAN — drawn on top, clips inner hand naturally ══ */}
+            {/* bottom dome */}
+            <ellipse cx={130} cy={342} rx={42} ry={11} fill="url(#LcanRim)"/>
+            {/* cylinder body */}
+            <rect x={88} y={96} width={84} height={248} fill="url(#LcanBody)"/>
+            {/* neck */}
+            <path fill="url(#LcanRim)"
+              d="M 88 96 C 88 82 106 72 130 72 C 154 72 172 82 172 96 Z"/>
+            {/* top rim ellipse */}
+            <ellipse cx={130} cy={72} rx={42} ry={10} fill="url(#LcanRim)"/>
+            {/* pull tab */}
+            <ellipse cx={130} cy={72} rx={20} ry={5.5} fill="#bbbbbb"/>
+            <rect x={121} y={65} width={18} height={10} rx={5}   fill="#999"/>
+            <rect x={127} y={61} width={7}  height={8}  rx={3.5} fill="#ccc"/>
+            {/* left-edge highlight */}
+            <rect x={90} y={98} width={8} height={244} rx={3} fill="#ffffff" opacity={0.07}/>
+            {/* specular oval (like ref image) */}
+            <ellipse cx={106} cy={215} rx={9} ry={28} fill="#ffffff" opacity={0.09}/>
+            {/* top green stripe */}
+            <rect x={88} y={120} width={84} height={10} fill="#00ff44"/>
+            {/* label band */}
+            <rect x={88} y={130} width={84} height={168} fill="#080808"/>
+            {/* bottom green stripe */}
+            <rect x={88} y={298} width={84} height={10} fill="#00ff44"/>
+            {/* SLURPN */}
+            <text x={130} y={168} textAnchor="middle"
+              fontFamily="'Press Start 2P', monospace" fontSize={9}
+              fill="#00ff44" style={{letterSpacing:'0.5px'}}>SLURPN</text>
+            {/* ENRGY */}
+            <text x={130} y={184} textAnchor="middle"
+              fontFamily="'Press Start 2P', monospace" fontSize={6}
+              fill="#00cc33">ENRGY</text>
+            {/* pixel lightning bolt */}
+            <rect x={122} y={194} width={5}  height={5} fill="#00ff44"/>
+            <rect x={118} y={199} width={5}  height={5} fill="#00ff44"/>
+            <rect x={122} y={204} width={10} height={5} fill="#00ff44"/>
+            <rect x={118} y={209} width={5}  height={5} fill="#00ff44"/>
+            <rect x={122} y={214} width={5}  height={5} fill="#00ff44"/>
+            {/* 666 ML */}
+            <text x={130} y={272} textAnchor="middle"
+              fontFamily="'Press Start 2P', monospace" fontSize={5}
+              fill="#006622" opacity={0.9}>666 ML</text>
+            {/* condensation drops */}
+            {[
+              [94,130],[102,168],[92,210],[98,252],[96,280],
+              [164,124],[162,164],[166,204],[164,248],[162,276],
+              [116,140],[148,154],[118,234],[146,244],[130,116],[128,278],
+            ].map(([x,y],i) => (
+              <circle key={i} cx={x} cy={y} r={1.4} fill="#ffffff" opacity={0.18}/>
+            ))}
+
+            {/* ══ 5. THUMB — drawn IN FRONT of can, wide flat oval ══ */}
+            {/* main thumb body */}
+            <ellipse cx={122} cy={210} rx={58} ry={23} fill="url(#LgThumb)"/>
+            {/* top highlight — bright strip along upper curve */}
+            <ellipse cx={118} cy={200} rx={48} ry={10} fill="#fdf0d8" opacity={0.38}/>
+            {/* bottom shadow edge */}
+            <ellipse cx={122} cy={228} rx={52} ry={8}  fill="#6a3008" opacity={0.22}/>
+            {/* knuckle fold crease */}
+            <path fill="none" stroke="#8a4820" strokeWidth={1.4} strokeOpacity={0.30}
+              d="M 74 204 Q 122 198 170 205"/>
+            {/* thumb hair */}
+            <g fill="none" stroke="#4a2006" strokeLinecap="round">
+              <path strokeWidth="0.9" strokeOpacity="0.18" d="M 96 196 Q 102 187 106 196"/>
+              <path strokeWidth="0.8" strokeOpacity="0.16" d="M 116 193 Q 122 184 126 193"/>
+              <path strokeWidth="0.8" strokeOpacity="0.15" d="M 138 194 Q 144 185 148 194"/>
+            </g>
+
+            {/* ══ 6. DETAILS — knuckle hair ══ */}
+            <g fill="none" stroke="#4a2006" strokeLinecap="round">
+              <path strokeWidth="0.8" strokeOpacity="0.20" d="M 198 158 Q 206 147 204 136"/>
+              <path strokeWidth="0.7" strokeOpacity="0.18" d="M 200 202 Q 208 191 206 180"/>
+              <path strokeWidth="0.7" strokeOpacity="0.18" d="M 197 243 Q 205 232 203 221"/>
+              <path strokeWidth="0.7" strokeOpacity="0.16" d="M 192 280 Q 200 270 198 259"/>
+            </g>
+
+          </g>
+        </svg>
+      </div>
+    </div>
+  )
+}
+
+// ─────────────────────────────────────────────
 // APP
 // ─────────────────────────────────────────────
 let _pid = 0
@@ -1039,7 +1275,11 @@ export default function App() {
   const [shaking,     setShaking]     = useState(false)
   const [muted,       setMuted]       = useState(false)
   const [exhaleBlobs, setExhaleBlobs] = useState([])
-  const [handPhase,   setHandPhase]   = useState('bob')
+  const [handPhase,     setHandPhase]     = useState('bob')
+  const [leftHandPhase, setLeftHandPhase] = useState('rest')
+  const [fizzBubbles,   setFizzBubbles]   = useState([])
+  const [sipMessage,    setSipMessage]    = useState('')
+  const [sipMsgKey,     setSipMsgKey]     = useState(0)
   const cigDone = puffCount > 0 && puffCount % MAX_CIG_PUFFS === 0
 
   // ── Background music ──────────────────────────
@@ -1107,6 +1347,27 @@ export default function App() {
   const removeBlob = useCallback(id => {
     setExhaleBlobs(prev => prev.filter(b => b.id !== id))
   }, [])
+
+  const removeFizz = useCallback(id => {
+    setFizzBubbles(prev => prev.filter(f => f.id !== id))
+  }, [])
+
+  const handleSip = useCallback(() => {
+    startAudio()
+    setLeftHandPhase('sip')
+    const canX = window.innerWidth * 0.01 + 130
+    const canY = window.innerHeight - 462
+    const bubbles = Array.from({ length: 14 }, () => ({
+      id: ++_pid,
+      x: canX + (Math.random() - 0.5) * 35,
+      y: canY + Math.random() * 15,
+    }))
+    setFizzBubbles(prev => [...prev, ...bubbles])
+    setSipMessage(SIP_MESSAGES[Math.floor(Math.random() * SIP_MESSAGES.length)])
+    setSipMsgKey(k => k + 1)
+    setTimeout(() => setLeftHandPhase('return'), 420)
+    setTimeout(() => setLeftHandPhase('rest'),   420 + 1200)
+  }, [startAudio])
 
   const spawnExhaleBlobs = useCallback(() => {
     const cx = window.innerWidth  / 2
@@ -1293,6 +1554,33 @@ export default function App() {
         lightNew={lightNew}
         onClick={handleSmoke}
       />
+
+      <LeftHand leftHandPhase={leftHandPhase} onClick={handleSip} />
+
+      {fizzBubbles.map(f => (
+        <FizzBubble key={f.id} x={f.x} y={f.y} onDone={() => removeFizz(f.id)} />
+      ))}
+
+      {sipMessage && (
+        <div
+          key={sipMsgKey}
+          style={{
+            position: 'fixed',
+            bottom: 260,
+            left: '18%',
+            fontFamily: "'Press Start 2P', monospace",
+            fontSize: 9,
+            color: '#00ff88',
+            textShadow: '0 0 12px #00ff88, 0 0 24px #00aa44',
+            animation: 'messageFloat 4.5s ease-out forwards',
+            whiteSpace: 'nowrap',
+            pointerEvents: 'none',
+            zIndex: 80,
+          }}
+        >
+          {sipMessage}
+        </div>
+      )}
 
       <CRTOverlay flashing={flashing} flashKey={flashKey} />
 
