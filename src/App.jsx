@@ -1,31 +1,29 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 
 // ─────────────────────────────────────────────
 // CONSTANTS
 // ─────────────────────────────────────────────
-const PIXEL = 8 // base pixel size for art
 const MAX_CIG_PUFFS = 88 // puffs before cig is done
-const CIG_BODY_HEIGHT = 176 // 88 * 2px per puff
 
 const WEIRD_MESSAGES = [
-  'INHALE THE TRUTH',
-  'BIG TOBACCO KNOWS',
-  'THE FILTER IS A LIE',
-  'PUFF PUFF WAKE UP',
-  'GAS STATION PROPHECY',
-  'THEY PUT SOMETHING IN IT',
-  'THE SMOKE SPEAKS TO YOU',
-  'NICOTINE = SIGNAL BOOST',
-  'BREATHE IN THE DATA',
-  'THE SURVEILLANCE SEES YOU',
-  'EVERY PUFF A TRANSMISSION',
-  'THE PUMPS NEVER RUN DRY',
-  'YOUR LUNGS ARE THEIRS NOW',
-  'CHEMTRAILS: LOCAL EDITION',
-  'THE CLERK IS WATCHING',
-  'IT KNOWS WHERE YOU LIVE',
-  'CARBON COPY OF YOUR SOUL',
-  'GAS PRICE = MIND PRICE',
+  'DOG SMEALE PAE PAE',
+  'SCABIES IS MY FRIEND',
+  'UNCLE JACK NEEDS HELP WITH THE HORSE LATER',
+  'ClOUDS ARE FAKE',
+  'MOTH VOMIT',
+  'I NEED OTHER CHEMICALS TOO',
+  'HEHE',
+  'I AM HAPPI',
+  'WEEEEENUS',
+  "I'M SCARED OF ALMOST EVERYTHING",
+  'SHOULD WASH MY NECK',
+  'FEELING WACKY',
+  'LIPS',
+  "I'M GLAD I PUSHED THAT POLICEMIN INTO THAT VOLCANO",
+  "Up'ere",
+  'MY BONES ARE FREEZING',
+  "I'M SHAVED I'M READY FOR BATTLE",
+  'CAVE OF WINDS 2 COMES OUT TONIGHT',
 ]
 
 const MILESTONE_MSGS = {
@@ -34,8 +32,6 @@ const MILESTONE_MSGS = {
   50:  '>>> FULL TRANSMISSION <<<',
   75:  '>>> YOU ARE FREQUENCY <<<',
 }
-
-let particleId = 0
 
 // ─────────────────────────────────────────────
 // SMOKE PARTICLE
@@ -71,149 +67,388 @@ function SmokeParticle({ x, y, big, onDone }) {
 }
 
 // ─────────────────────────────────────────────
-// THE PIXEL ART HAND + CIGARETTE
+// HAND — 3D SVG with bezier curves + gradients
 // ─────────────────────────────────────────────
-function Hand({ isInhaling, puffCount, ligthNew }) {
-  const puffs = Math.min(puffCount, MAX_CIG_PUFFS)
-  const cigUsed   = puffs * 2                          // px consumed
-  const cigLen    = CIG_BODY_HEIGHT - cigUsed          // remaining white part
-  const ashLen    = Math.min(puffs * 1.5, 28)         // ash grows
-  const filterY   = 30 + ashLen + Math.max(cigLen, 0) // filter slides up
-  const emberY    = 0                                  // ember stays at top
+// SVG viewBox 400×640, displayed at 400px wide.
+// Cigarette centre-line: x=168, tip at y=28, filter at y=262.
+// Ember screen offset: vw/2 - 32,  vh - 460
+function Hand({ handPhase, puffCount, onClick }) {
+  const isInhaling = handPhase === 'inhale'
+  const burnFrac = Math.min(puffCount / MAX_CIG_PUFFS, 1)
+  // Visible cig body = tip(y28) → filter(y262) = 234px total
+  const ashLen  = burnFrac * 180          // ash grows from tip downward
+  const bodyY   = 28 + ashLen             // white body starts here
+  const bodyLen = Math.max(0, 234 - ashLen) // remaining white
 
-  const animStyle = isInhaling
-    ? { animation: 'handInhale 0.4s ease-out forwards' }
-    : { animation: 'handBob 3s ease-in-out infinite' }
-
-  if (ligthNew) {
-    // brief flash of "new cig" — just show normal hand fully
-  }
+  const animStyle =
+    handPhase === 'inhale'  ? { animation: 'handInhale 0.38s ease-out forwards' } :
+    handPhase === 'return'  ? { animation: 'handReturn 1.2s cubic-bezier(0.22,1,0.36,1) forwards' } :
+    { animation: 'handBob 3s ease-in-out infinite' }
 
   return (
-    <div
-      style={{
-        position: 'fixed',
-        bottom: '-70px',
-        left: '50%',
-        transform: 'translateX(-50%)',
-        zIndex: 25,
-        width: '340px',
-        pointerEvents: 'none',
-        ...animStyle,
-      }}
-    >
-      <svg
-        width="340"
-        height="540"
-        viewBox="0 0 340 540"
-        style={{ imageRendering: 'pixelated', display: 'block' }}
-        shapeRendering="crispEdges"
-      >
-        {/* ── EMBER ── */}
-        {cigLen > 0 && (
-          <g style={{ animation: isInhaling ? 'emberBright 0.1s ease infinite' : 'emberPulse 0.8s ease-in-out infinite' }}>
-            {/* outer glow */}
-            <rect x="146" y={emberY + 6}  width="28" height="20" fill="#ff6600" opacity="0.25" />
-            <rect x="150" y={emberY + 4}  width="20" height="18" fill="#ff8800" opacity="0.45" />
-            {/* core */}
-            <rect x="154" y={emberY}      width="12" height="8"  fill="#ffdd00" />
-            <rect x="152" y={emberY + 6}  width="16" height="10" fill="#ff5500" />
-            <rect x="150" y={emberY + 12} width="20" height="8"  fill="#cc2200" />
+    <div style={{
+      position: 'fixed',
+      bottom: '-150px',
+      left: '50%',
+      transform: 'translateX(-50%)',
+      width: '400px',
+      pointerEvents: 'auto',
+      cursor: 'crosshair',
+      zIndex: 25,
+      filter: 'contrast(1.08) saturate(0.88)',
+      ...animStyle,
+    }} onClick={onClick}>
+      <svg width="400" height="640" viewBox="0 0 400 640" style={{ display: 'block', overflow: 'visible' }}>
+        <defs>
+          {/* ── Skin tone gradients — left=highlight, right=shadow ── */}
+          <linearGradient id="gFront" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%"   stopColor="#f8cc96" />
+            <stop offset="28%"  stopColor="#e8a868" />
+            <stop offset="62%"  stopColor="#c07840" />
+            <stop offset="100%" stopColor="#854018" />
+          </linearGradient>
+          <linearGradient id="gMid" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%"   stopColor="#edb878" />
+            <stop offset="30%"  stopColor="#d09050" />
+            <stop offset="68%"  stopColor="#a86030" />
+            <stop offset="100%" stopColor="#6c3010" />
+          </linearGradient>
+          <linearGradient id="gBack" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%"   stopColor="#d49860" />
+            <stop offset="40%"  stopColor="#b07038" />
+            <stop offset="100%" stopColor="#6a2e08" />
+          </linearGradient>
+          <linearGradient id="gThumb" x1="100%" y1="0%" x2="0%" y2="0%">
+            <stop offset="0%"   stopColor="#f0c080" />
+            <stop offset="35%"  stopColor="#d08848" />
+            <stop offset="100%" stopColor="#7a3810" />
+          </linearGradient>
+          <linearGradient id="gPalm" x1="15%" y1="0%" x2="85%" y2="100%">
+            <stop offset="0%"   stopColor="#d89058" />
+            <stop offset="35%"  stopColor="#b87040" />
+            <stop offset="70%"  stopColor="#986030" />
+            <stop offset="100%" stopColor="#6e3810" />
+          </linearGradient>
+          {/* Cigarette */}
+          <linearGradient id="gCigW" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%"   stopColor="#fafaf0" />
+            <stop offset="45%"  stopColor="#f2f0e0" />
+            <stop offset="80%"  stopColor="#d8d4c0" />
+            <stop offset="100%" stopColor="#b8b498" />
+          </linearGradient>
+          <linearGradient id="gFilter" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%"   stopColor="#eeaa44" />
+            <stop offset="50%"  stopColor="#c88020" />
+            <stop offset="100%" stopColor="#8c5000" />
+          </linearGradient>
+          <linearGradient id="gAsh" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%"   stopColor="#dddddd" />
+            <stop offset="55%"  stopColor="#aaaaaa" />
+            <stop offset="100%" stopColor="#888888" />
+          </linearGradient>
+          <linearGradient id="gNail" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%"   stopColor="#f8e8cc" stopOpacity="0.88"/>
+            <stop offset="60%"  stopColor="#e0c898" stopOpacity="0.65"/>
+            <stop offset="100%" stopColor="#c8a878" stopOpacity="0.40"/>
+          </linearGradient>
+          {/* Drop shadow on whole hand */}
+          <filter id="handShadow" x="-15%" y="-10%" width="135%" height="130%">
+            <feDropShadow dx="5" dy="8" stdDeviation="7" floodColor="#00000060"/>
+          </filter>
+          {/* Soft inter-finger shadow */}
+          <filter id="softBlur">
+            <feGaussianBlur stdDeviation="2.5"/>
+          </filter>
+        </defs>
+
+        <g filter="url(#handShadow)">
+
+          {/* ══════════════════════════════════
+              PALM — back of hand, dorsal view
+          ══════════════════════════════════ */}
+          <path fill="url(#gPalm)"
+            d="M 90 348
+               C 82 395 78 445 80 498
+               C 81 548 86 595 94 640
+               L 320 640
+               C 326 595 329 548 328 498
+               C 329 445 325 395 316 348
+               C 292 332 262 324 235 321
+               C 208 318 178 318 158 321
+               C 135 325 108 336 90 348 Z"/>
+
+          {/* Palm highlight ridge (knuckle row) */}
+          <path fill="none" stroke="#f0b868" strokeWidth="1.8" strokeOpacity="0.35"
+            d="M 95 340 Q 140 322 190 318 Q 232 316 272 324 Q 304 330 318 342"/>
+
+          {/* Wrist tendon lines */}
+          <path fill="none" stroke="#7a3810" strokeWidth="1.4" strokeOpacity="0.32"
+            d="M 158 600 Q 160 510 162 460"/>
+          <path fill="none" stroke="#7a3810" strokeWidth="1.4" strokeOpacity="0.28"
+            d="M 205 610 Q 206 515 207 462"/>
+          <path fill="none" stroke="#7a3810" strokeWidth="1.2" strokeOpacity="0.25"
+            d="M 252 605 Q 251 515 250 462"/>
+
+          {/* ══════════ PINKY ══════════ */}
+          <path fill="url(#gBack)"
+            d="M 261 350
+               C 257 322 255 286 256 256
+               C 257 230 260 208 265 194
+               Q 271 182 278 185
+               Q 285 189 286 203
+               C 287 222 285 248 283 272
+               C 281 304 279 330 278 350 Z"/>
+          {/* Pinky nail */}
+          <path fill="url(#gNail)"
+            d="M 266 197 Q 272 183 278 186 Q 284 190 284 202 Q 280 190 270 191 Z"/>
+          {/* Pinky knuckle shadows */}
+          <ellipse cx="270" cy="278" rx="10" ry="4.5" fill="#6a2e08" fillOpacity="0.28"/>
+          <ellipse cx="267" cy="233" rx="9"  ry="4"   fill="#6a2e08" fillOpacity="0.22"/>
+
+          {/* ══════════ RING FINGER ══════════ */}
+          <path fill="url(#gMid)"
+            d="M 212 348
+               C 210 316 209 272 210 232
+               C 211 194 215 160 223 135
+               Q 230 118 238 120
+               Q 247 124 249 140
+               C 251 162 250 200 250 238
+               C 249 278 248 320 248 348 Z"/>
+          {/* Ring nail */}
+          <path fill="url(#gNail)"
+            d="M 224 139 Q 230 119 238 121 Q 246 125 248 140 Q 244 127 231 126 Z"/>
+          {/* Ring knuckle */}
+          <ellipse cx="231" cy="250" rx="11" ry="5"   fill="#6a2e08" fillOpacity="0.28"/>
+          <ellipse cx="228" cy="194" rx="10" ry="4.5" fill="#6a2e08" fillOpacity="0.22"/>
+          <ellipse cx="225" cy="152" rx="9"  ry="4"   fill="#6a2e08" fillOpacity="0.18"/>
+
+          {/* ══════════ THUMB (left side) ══════════ */}
+          <path fill="url(#gThumb)"
+            d="M 94 380
+               C 82 362 74 336 70 308
+               C 67 286 68 266 74 252
+               Q 82 240 93 244
+               C 104 250 110 270 113 296
+               C 116 322 114 355 110 380 Z"/>
+          {/* Thumb nail */}
+          <path fill="url(#gNail)"
+            d="M 75 256 Q 83 241 93 244 Q 102 249 104 262 Q 98 249 82 251 Z"/>
+          {/* Thumb knuckle */}
+          <ellipse cx="93" cy="330" rx="10" ry="4.5" fill="#6a2e08" fillOpacity="0.22"/>
+
+          {/* ══════════ CIGARETTE ══════════ */}
+          {/* Ash (burned portion, grows from tip) */}
+          {ashLen > 1 && (
+            <rect x="161" y="28" width="14" height={ashLen}
+              fill="url(#gAsh)" rx="1"/>
+          )}
+          {/* White body */}
+          {bodyLen > 1 && (
+            <rect x="161" y={bodyY} width="14" height={bodyLen}
+              fill="url(#gCigW)" rx="1"/>
+          )}
+          {/* Paper edge line for realism */}
+          {bodyLen > 1 && (
+            <line x1="162" y1={bodyY} x2="162" y2={bodyY + bodyLen}
+              stroke="#c8c4a8" strokeWidth="0.8" strokeOpacity="0.6"/>
+          )}
+          {/* Filter */}
+          <rect x="160" y="262" width="16" height="52" fill="url(#gFilter)" rx="1.5"/>
+          <line x1="160" y1="262" x2="176" y2="262" stroke="#f0b840" strokeWidth="1.5"/>
+
+          {/* ══════════ MIDDLE FINGER (right of cig) ══════════ */}
+          <path fill="url(#gFront)"
+            d="M 183 344
+               C 180 312 179 264 180 220
+               C 181 178 185 140 192 106
+               Q 198 80 207 78
+               Q 216 77 221 94
+               C 225 116 224 156 222 200
+               C 221 240 219 292 218 344 Z"/>
+          {/* Middle nail */}
+          <path fill="url(#gNail)"
+            d="M 193 110 Q 199 81 207 78 Q 215 78 220 94 Q 215 81 201 83 Z"/>
+          {/* Middle knuckle shadows */}
+          <ellipse cx="200" cy="242" rx="12" ry="5.5" fill="#7a3010" fillOpacity="0.28"/>
+          <ellipse cx="197" cy="178" rx="11" ry="5"   fill="#7a3010" fillOpacity="0.22"/>
+          <ellipse cx="194" cy="134" rx="10" ry="4.5" fill="#7a3010" fillOpacity="0.18"/>
+
+          {/* ══════════ INDEX FINGER (left of cig) ══════════ */}
+          <path fill="url(#gFront)"
+            d="M 116 340
+               C 113 308 112 260 113 216
+               C 114 175 118 138 126 108
+               Q 132 85 141 83
+               Q 151 82 155 98
+               C 159 120 159 160 157 204
+               C 156 246 153 298 151 340 Z"/>
+          {/* Index nail */}
+          <path fill="url(#gNail)"
+            d="M 127 112 Q 133 86 141 83 Q 150 83 154 98 Q 149 85 136 87 Z"/>
+          {/* Index knuckle shadows */}
+          <ellipse cx="135" cy="234" rx="12" ry="5.5" fill="#7a3010" fillOpacity="0.30"/>
+          <ellipse cx="132" cy="170" rx="11" ry="5"   fill="#7a3010" fillOpacity="0.24"/>
+          <ellipse cx="129" cy="128" rx="10" ry="4.5" fill="#7a3010" fillOpacity="0.18"/>
+
+          {/* ══════════ INTER-FINGER WEB SHADOWS ══════════ */}
+          <path fill="#6a2e08" fillOpacity="0.22"
+            d="M 151 342 L 183 344 L 184 332 Q 168 326 150 332 Z"/>
+          <path fill="#6a2e08" fillOpacity="0.18"
+            d="M 218 344 L 212 348 L 214 334 Q 216 330 220 334 Z"/>
+          <path fill="#6a2e08" fillOpacity="0.15"
+            d="M 248 348 L 261 350 L 263 337 Q 256 332 247 337 Z"/>
+
+          {/* ══════════ KNUCKLE HIGHLIGHTS ══════════ */}
+          <ellipse cx="136" cy="332" rx="14" ry="5"   fill="#7a3010" fillOpacity="0.32"/>
+          <ellipse cx="200" cy="328" rx="15" ry="5.5" fill="#7a3010" fillOpacity="0.30"/>
+          <ellipse cx="231" cy="334" rx="13" ry="5"   fill="#7a3010" fillOpacity="0.26"/>
+          <ellipse cx="268" cy="342" rx="11" ry="4.5" fill="#7a3010" fillOpacity="0.22"/>
+
+          {/* Dorsal vein arcs */}
+          <path fill="none" stroke="#8a3c14" strokeWidth="1.3" strokeOpacity="0.25"
+            d="M 134 332 Q 138 420 141 500"/>
+          <path fill="none" stroke="#8a3c14" strokeWidth="1.3" strokeOpacity="0.22"
+            d="M 200 328 Q 202 418 204 500"/>
+          <path fill="none" stroke="#8a3c14" strokeWidth="1.1" strokeOpacity="0.20"
+            d="M 230 332 Q 231 420 232 500"/>
+
+          {/* ══════════ HAND HAIR ══════════ */}
+          <g fill="none" stroke="#4a2006" strokeLinecap="round">
+            {/* ── palm / metacarpal — thick bushy coverage ── */}
+            <path strokeWidth="1.2" strokeOpacity="0.42" d="M 140 396 Q 143 379 140 364"/>
+            <path strokeWidth="1.0" strokeOpacity="0.36" d="M 148 410 Q 151 392 149 376"/>
+            <path strokeWidth="1.1" strokeOpacity="0.38" d="M 156 400 Q 159 382 157 366"/>
+            <path strokeWidth="0.9" strokeOpacity="0.32" d="M 163 415 Q 165 397 164 381"/>
+            <path strokeWidth="1.2" strokeOpacity="0.40" d="M 171 404 Q 174 385 172 369"/>
+            <path strokeWidth="1.0" strokeOpacity="0.34" d="M 179 418 Q 182 400 180 384"/>
+            <path strokeWidth="0.8" strokeOpacity="0.28" d="M 186 407 Q 188 391 187 376"/>
+            <path strokeWidth="1.1" strokeOpacity="0.38" d="M 196 412 Q 199 394 197 378"/>
+            <path strokeWidth="1.0" strokeOpacity="0.35" d="M 207 402 Q 210 384 208 368"/>
+            <path strokeWidth="0.9" strokeOpacity="0.31" d="M 216 416 Q 219 398 217 382"/>
+            <path strokeWidth="1.1" strokeOpacity="0.37" d="M 224 406 Q 227 388 225 373"/>
+            <path strokeWidth="1.0" strokeOpacity="0.33" d="M 233 418 Q 236 400 234 384"/>
+            <path strokeWidth="0.9" strokeOpacity="0.30" d="M 242 405 Q 245 388 243 372"/>
+            <path strokeWidth="1.0" strokeOpacity="0.34" d="M 251 412 Q 253 395 252 379"/>
+            <path strokeWidth="0.8" strokeOpacity="0.28" d="M 260 400 Q 262 385 261 370"/>
+            <path strokeWidth="1.1" strokeOpacity="0.36" d="M 268 414 Q 270 398 269 382"/>
+            {/* wiry strays that go the wrong way (very trashy) */}
+            <path strokeWidth="0.8" strokeOpacity="0.30" d="M 152 388 Q 147 375 150 362"/>
+            <path strokeWidth="0.7" strokeOpacity="0.25" d="M 220 396 Q 215 382 218 369"/>
+            <path strokeWidth="0.9" strokeOpacity="0.28" d="M 244 390 Q 248 378 245 366"/>
+            {/* ── index finger — hairs all the way up ── */}
+            <path strokeWidth="1.0" strokeOpacity="0.34" d="M 125 312 Q 128 299 126 286"/>
+            <path strokeWidth="0.9" strokeOpacity="0.30" d="M 133 318 Q 136 305 134 292"/>
+            <path strokeWidth="0.8" strokeOpacity="0.26" d="M 141 310 Q 143 298 142 285"/>
+            <path strokeWidth="0.9" strokeOpacity="0.28" d="M 128 270 Q 131 258 129 246"/>
+            <path strokeWidth="0.7" strokeOpacity="0.22" d="M 136 275 Q 138 263 137 250"/>
+            <path strokeWidth="0.8" strokeOpacity="0.24" d="M 143 268 Q 145 257 144 245"/>
+            <path strokeWidth="0.7" strokeOpacity="0.20" d="M 131 234 Q 133 224 132 213"/>
+            {/* ── middle finger ── */}
+            <path strokeWidth="1.0" strokeOpacity="0.32" d="M 191 294 Q 194 281 192 268"/>
+            <path strokeWidth="0.9" strokeOpacity="0.28" d="M 200 300 Q 203 287 201 274"/>
+            <path strokeWidth="0.8" strokeOpacity="0.26" d="M 208 292 Q 210 280 209 267"/>
+            <path strokeWidth="0.9" strokeOpacity="0.26" d="M 193 252 Q 196 240 194 228"/>
+            <path strokeWidth="0.8" strokeOpacity="0.22" d="M 202 256 Q 204 244 203 232"/>
+            <path strokeWidth="0.7" strokeOpacity="0.20" d="M 196 214 Q 198 204 197 193"/>
+            {/* ── ring finger ── */}
+            <path strokeWidth="1.0" strokeOpacity="0.30" d="M 221 300 Q 224 287 222 274"/>
+            <path strokeWidth="0.9" strokeOpacity="0.26" d="M 230 306 Q 232 293 231 280"/>
+            <path strokeWidth="0.8" strokeOpacity="0.24" d="M 238 298 Q 240 286 239 273"/>
+            <path strokeWidth="0.8" strokeOpacity="0.24" d="M 224 260 Q 226 249 225 237"/>
+            <path strokeWidth="0.7" strokeOpacity="0.20" d="M 232 264 Q 234 253 233 241"/>
+            {/* ── pinky — scraggly lil hairs ── */}
+            <path strokeWidth="1.0" strokeOpacity="0.32" d="M 259 320 Q 262 309 260 297"/>
+            <path strokeWidth="0.9" strokeOpacity="0.28" d="M 267 326 Q 269 315 268 303"/>
+            <path strokeWidth="0.8" strokeOpacity="0.24" d="M 274 318 Q 276 308 275 296"/>
+            <path strokeWidth="0.8" strokeOpacity="0.24" d="M 261 280 Q 263 270 262 259"/>
+            <path strokeWidth="0.7" strokeOpacity="0.20" d="M 268 284 Q 270 274 269 263"/>
+            {/* ── thumb — hairy knuckle ── */}
+            <path strokeWidth="1.0" strokeOpacity="0.32" d="M 78 294 Q 82 282 80 270"/>
+            <path strokeWidth="0.9" strokeOpacity="0.28" d="M 86 300 Q 89 288 87 276"/>
+            <path strokeWidth="0.8" strokeOpacity="0.24" d="M 93 292 Q 96 281 94 269"/>
+            <path strokeWidth="0.9" strokeOpacity="0.26" d="M 80 258 Q 83 247 81 236"/>
           </g>
-        )}
 
-        {/* ── ASH ── */}
-        {ashLen > 0 && cigLen > 0 && (
-          <>
-            <rect x="155" y={emberY + 18}              width="10" height={Math.min(ashLen * 0.6, 10)} fill="#cccccc" />
-            <rect x="156" y={emberY + 18 + Math.min(ashLen * 0.6, 10)} width="8"  height={Math.min(ashLen * 0.4, 18)} fill="#aaaaaa" />
-          </>
-        )}
+          {/* ══════════ TATTOO — big trashy skull ══════════ */}
+          {/* blurred shadow */}
+          <g transform="rotate(-5, 200, 462)" opacity="0.30" filter="url(#softBlur)">
+            <rect x={180} y={418} width={40} height={80} fill="#100818"/>
+            <rect x={165} y={433} width={70} height={60} fill="#100818"/>
+            <rect x={160} y={494} width={80} height={22} fill="#100818"/>
+          </g>
+          {/* main ink — u=5, skull 14 cols wide (70px), center x=200 → left edge x=165 */}
+          <g transform="rotate(-5, 200, 462)" opacity="0.56" style={{ mixBlendMode: 'multiply' }}>
+            {/* ── dome ── */}
+            <rect x={180} y={418} width={40} height={5} fill="#120820"/>
+            <rect x={175} y={423} width={50} height={5} fill="#120820"/>
+            <rect x={170} y={428} width={60} height={5} fill="#120820"/>
+            <rect x={165} y={433} width={70} height={5} fill="#120820"/>
+            <rect x={165} y={438} width={70} height={5} fill="#120820"/>
+            {/* ── eye rows (3 rows) — left block | L-socket gap | nose bridge | R-socket gap | right block ── */}
+            {[443, 448, 453].map(y => (
+              <g key={y}>
+                <rect x={165} y={y} width={10} height={5} fill="#120820"/>
+                <rect x={190} y={y} width={20} height={5} fill="#120820"/>
+                <rect x={225} y={y} width={10} height={5} fill="#120820"/>
+              </g>
+            ))}
+            {/* X in left socket (x=175–189) */}
+            <rect x={175} y={443} width={5} height={5} fill="#120820"/>
+            <rect x={185} y={443} width={5} height={5} fill="#120820"/>
+            <rect x={180} y={448} width={5} height={5} fill="#120820"/>
+            <rect x={175} y={453} width={5} height={5} fill="#120820"/>
+            <rect x={185} y={453} width={5} height={5} fill="#120820"/>
+            {/* X in right socket (x=210–224) */}
+            <rect x={210} y={443} width={5} height={5} fill="#120820"/>
+            <rect x={220} y={443} width={5} height={5} fill="#120820"/>
+            <rect x={215} y={448} width={5} height={5} fill="#120820"/>
+            <rect x={210} y={453} width={5} height={5} fill="#120820"/>
+            <rect x={220} y={453} width={5} height={5} fill="#120820"/>
+            {/* ── cheekbone + jaw ── */}
+            <rect x={165} y={458} width={70} height={5} fill="#120820"/>
+            <rect x={170} y={463} width={60} height={5} fill="#120820"/>
+            <rect x={175} y={468} width={50} height={5} fill="#120820"/>
+            <rect x={175} y={473} width={50} height={5} fill="#120820"/>
+            {/* ── teeth — uneven and trashy ── */}
+            <rect x={175} y={478} width={10} height={8} fill="#120820"/>
+            <rect x={190} y={478} width={15} height={8} fill="#120820"/>
+            <rect x={210} y={478} width={5}  height={8} fill="#120820"/>
+            <rect x={220} y={478} width={5}  height={5} fill="#120820"/>
+            {/* bottom jaw */}
+            <rect x={175} y={486} width={50} height={5} fill="#120820"/>
+            {/* ── skull crack ── */}
+            <rect x={197} y={421} width={4} height={14} fill="#120820" opacity="0.65"/>
+            <rect x={193} y={432} width={6} height={5}  fill="#120820" opacity="0.45"/>
+            {/* ── side crosses ── */}
+            <rect x={142} y={449} width={18} height={4} fill="#120820"/>
+            <rect x={148} y={443} width={6}  height={18} fill="#120820"/>
+            <rect x={234} y={449} width={18} height={4} fill="#120820"/>
+            <rect x={240} y={443} width={6}  height={18} fill="#120820"/>
+            {/* tiny 3-dot motif beside each cross */}
+            {[-1, 0, 1].map(d => <rect key={d} x={136} y={465 + d*6} width={3} height={3} fill="#120820"/>)}
+            {[-1, 0, 1].map(d => <rect key={d} x={255} y={465 + d*6} width={3} height={3} fill="#120820"/>)}
+            {/* ── SLURPN banner ── */}
+            <rect x={128} y={494} width={130} height={26} fill="#120820"/>
+            <rect x={130} y={496} width={126} height={22} fill="#c8984a" opacity="0.78"/>
+            <text
+              x={204} y={515}
+              textAnchor="middle"
+              fontFamily="'Press Start 2P', monospace"
+              fontSize="17"
+              fill="#0d0518"
+              style={{ letterSpacing: '1px' }}
+            >SLURPN</text>
+          </g>
 
-        {/* ── CIGARETTE BODY ── */}
-        {cigLen > 0 && (
-          <>
-            <rect x="155" y={30}           width="10" height={cigLen}  fill="#f0eed8" />
-            <rect x="154" y={32}           width="1"  height={cigLen - 2} fill="#e0dccc" />
-            <rect x="165" y={32}           width="1"  height={cigLen - 2} fill="#e8e4d0" />
-          </>
-        )}
+          {/* ══════════ EMBER ══════════ */}
+          <g style={{ animation: isInhaling ? 'emberBright 0.12s ease-in-out infinite' : 'emberPulse 0.85s ease-in-out infinite' }}>
+            <ellipse cx="168" cy="32" rx="16" ry="14" fill="#ff7700" fillOpacity="0.28"/>
+            <ellipse cx="168" cy="31" rx="10" ry="9"  fill="#ff5500" fillOpacity="0.60"/>
+            <ellipse cx="168" cy="30" rx="6"  ry="5"  fill="#ffcc00"/>
+            <ellipse cx="167" cy="29" rx="3"  ry="2.5" fill="#ffffff" fillOpacity="0.85"/>
+          </g>
 
-        {/* ── FILTER ── */}
-        <rect x="153" y={filterY}      width="14" height="5"  fill="#ddb070" />
-        <rect x="153" y={filterY + 5}  width="14" height="36" fill="#c89050" />
-        <rect x="153" y={filterY + 38} width="14" height="5"  fill="#b07830" />
-
-        {/* ════ FINGERS ════ */}
-
-        {/* MIDDLE FINGER — left of cig */}
-        <rect x="100" y="56"  width="56" height="16" fill="#f8c888" />  {/* nail */}
-        <rect x="100" y="70"  width="56" height="24" fill="#f5b870" />
-        <rect x="98"  y="94"  width="58" height="28" fill="#f5b870" />
-        <rect x="96"  y="120" width="60" height="32" fill="#f5b870" />
-        <rect x="94"  y="150" width="62" height="30" fill="#f5b870" />
-        <rect x="92"  y="178" width="64" height="30" fill="#f0ad66" />  {/* knuckle area */}
-        <rect x="90"  y="206" width="66" height="28" fill="#e8a45e" />
-        {/* shadow lines */}
-        <rect x="100" y="56"  width="2"  height="152" fill="#c87030" opacity="0.4" />
-        <rect x="152" y="56"  width="2"  height="152" fill="#c87030" opacity="0.4" />
-
-        {/* INDEX FINGER — right of cig */}
-        <rect x="184" y="44"  width="52" height="16" fill="#f8c888" />  {/* nail */}
-        <rect x="184" y="58"  width="52" height="24" fill="#f5b870" />
-        <rect x="182" y="82"  width="54" height="28" fill="#f5b870" />
-        <rect x="180" y="110" width="56" height="32" fill="#f5b870" />
-        <rect x="178" y="140" width="58" height="30" fill="#f5b870" />
-        <rect x="176" y="168" width="60" height="30" fill="#f0ad66" />
-        <rect x="174" y="196" width="62" height="30" fill="#e8a45e" />
-        {/* shadow lines */}
-        <rect x="184" y="44"  width="2"  height="152" fill="#c87030" opacity="0.4" />
-        <rect x="232" y="44"  width="2"  height="152" fill="#c87030" opacity="0.4" />
-
-        {/* RING FINGER */}
-        <rect x="40"  y="72"  width="60" height="16" fill="#f8c888" />
-        <rect x="40"  y="86"  width="60" height="24" fill="#eba060" />
-        <rect x="38"  y="108" width="62" height="28" fill="#eba060" />
-        <rect x="36"  y="134" width="64" height="32" fill="#e89858" />
-        <rect x="34"  y="164" width="66" height="30" fill="#e49050" />
-        <rect x="32"  y="192" width="68" height="30" fill="#e08848" />
-        <rect x="30"  y="220" width="70" height="28" fill="#d88040" />
-
-        {/* PINKY */}
-        <rect x="0"   y="112" width="40" height="14" fill="#f8c888" />
-        <rect x="0"   y="124" width="40" height="22" fill="#e8a060" />
-        <rect x="0"   y="144" width="40" height="26" fill="#e49858" />
-        <rect x="0"   y="168" width="42" height="28" fill="#e09050" />
-        <rect x="0"   y="194" width="44" height="28" fill="#dc8848" />
-        <rect x="0"   y="220" width="46" height="28" fill="#d88040" />
-
-        {/* THUMB */}
-        <rect x="258" y="172" width="44" height="14" fill="#f8c888" />
-        <rect x="254" y="184" width="52" height="22" fill="#eba060" />
-        <rect x="252" y="204" width="56" height="28" fill="#e89858" />
-        <rect x="250" y="230" width="60" height="28" fill="#e49050" />
-        <rect x="248" y="256" width="64" height="28" fill="#e08848" />
-
-        {/* ── PALM ── */}
-        <rect x="0"   y="245" width="340" height="295" fill="#c87030" />
-        {/* palm top highlight */}
-        <rect x="0"   y="240" width="340" height="20"  fill="#e89858" />
-        <rect x="0"   y="256" width="340" height="6"   fill="#b06020" />
-        {/* palm mid highlight */}
-        <rect x="60"  y="290" width="200" height="50"  fill="#d88038" opacity="0.35" />
-        {/* palm shadow bottom */}
-        <rect x="0"   y="460" width="340" height="80"  fill="#9a4818" opacity="0.5" />
-
-        {/* knuckle bumps */}
-        <rect x="90"  y="238" width="64" height="10"   fill="#d8904a" />
-        <rect x="174" y="228" width="60" height="10"   fill="#d8904a" />
-        <rect x="30"  y="248" width="70" height="8"    fill="#d8904a" />
-        <rect x="0"   y="260" width="46" height="6"    fill="#d8904a" />
-
-        {/* ── DONE overlay: stub ── */}
-        {cigLen <= 0 && (
-          <rect x="148" y="0" width="44" height="10" fill="#888" opacity="0.7" />
-        )}
+        </g>{/* end handShadow group */}
       </svg>
     </div>
   )
@@ -700,7 +935,7 @@ function HUD({ puffCount, message, msgKey, cigDone }) {
             fontSize: 9,
             color: '#00ffcc',
             textShadow: '0 0 12px #00ffcc, 0 0 24px #00aa88',
-            animation: 'messageFloat 2.5s ease-out forwards',
+            animation: 'messageFloat 4.5s ease-out forwards',
             whiteSpace: 'nowrap',
             pointerEvents: 'none',
             zIndex: 80,
@@ -734,9 +969,9 @@ function HUD({ puffCount, message, msgKey, cigDone }) {
 }
 
 // ─────────────────────────────────────────────
-// EXHALE CLOUD (big puff on click)
+// EXHALE CLOUD (small burst at ember on click)
 // ─────────────────────────────────────────────
-function ExhaleCloud({ x, y, id, onDone }) {
+function ExhaleCloud({ x, y, onDone }) {
   useEffect(() => {
     const t = setTimeout(onDone, 1400)
     return () => clearTimeout(t)
@@ -758,6 +993,35 @@ function ExhaleCloud({ x, y, id, onDone }) {
 }
 
 // ─────────────────────────────────────────────
+// BIG EXHALE BLOB — one wisp of the exhale cloud
+// ─────────────────────────────────────────────
+function ExhaleBlob({ cx, cy, size, driftX, driftY, dur, delay, opacity, animName = 'bigExhale', onDone }) {
+  useEffect(() => {
+    const t = setTimeout(onDone, (dur + delay) * 1000 + 100)
+    return () => clearTimeout(t)
+  }, []) // eslint-disable-line
+
+  return (
+    <div
+      style={{
+        position: 'fixed',
+        left: cx,
+        top:  cy,
+        width:  size,
+        height: size,
+        background: `rgba(215,215,215,${opacity.toFixed(2)})`,
+        borderRadius: '50%',
+        pointerEvents: 'none',
+        zIndex: 60,
+        '--drift-x': `${driftX}px`,
+        '--drift-y': `${driftY}px`,
+        animation: `${animName} ${dur}s ease-out ${delay}s both`,
+      }}
+    />
+  )
+}
+
+// ─────────────────────────────────────────────
 // APP
 // ─────────────────────────────────────────────
 let _pid = 0
@@ -773,17 +1037,47 @@ export default function App() {
   const [flashing,    setFlashing]    = useState(false)
   const [lightNew,    setLightNew]    = useState(false)
   const [shaking,     setShaking]     = useState(false)
+  const [muted,       setMuted]       = useState(false)
+  const [exhaleBlobs, setExhaleBlobs] = useState([])
+  const [handPhase,   setHandPhase]   = useState('bob')
   const cigDone = puffCount > 0 && puffCount % MAX_CIG_PUFFS === 0
 
-  // Ember position: hand SVG is 540px tall, bottom: -70px
-  // so top of SVG = vh - 540 + 70 = vh - 470; ember is at y≈10 inside SVG
+  // ── Background music ──────────────────────────
+  const audioRef = useRef(null)
+  const puffAudioRef = useRef(null)
+  const audioStarted = useRef(false)
+
+  const startAudio = useCallback(() => {
+    if (audioStarted.current || !audioRef.current) return
+    audioStarted.current = true
+    audioRef.current.play().catch(() => {})
+  }, [])
+
+  // Try autoplay on mount; browsers may block it — we catch silently
+  // and fall back to starting on first click.
+  useEffect(() => {
+    const audio = audioRef.current
+    if (!audio) return
+    audio.volume = 0.45
+    audio.play().then(() => {
+      audioStarted.current = true
+    }).catch(() => {
+      // Blocked — will start on first click via startAudio()
+    })
+  }, [])
+
+  // Ember position: SVG 400×640, bottom: -150px
+  // Div top = vh + 150 - 640 = vh - 490. Ember at SVG (168, 30).
+  // X: centre of div = vw/2 - 200; ember offset 168px → vw/2 - 200 + 168 = vw/2 - 32
+  // Y: (vh - 490) + 30 = vh - 460
+  const calcEmberX = () => window.innerWidth  / 2 - 32
   const calcEmberY = () => window.innerHeight - 460
-  const EMBER_X = useRef(window.innerWidth  / 2)
+  const EMBER_X = useRef(calcEmberX())
   const EMBER_Y = useRef(calcEmberY())
 
   useEffect(() => {
     const onResize = () => {
-      EMBER_X.current = window.innerWidth  / 2
+      EMBER_X.current = calcEmberX()
       EMBER_Y.current = calcEmberY()
     }
     window.addEventListener('resize', onResize)
@@ -810,17 +1104,66 @@ export default function App() {
     setExhales(prev => prev.filter(e => e.id !== id))
   }, [])
 
+  const removeBlob = useCallback(id => {
+    setExhaleBlobs(prev => prev.filter(b => b.id !== id))
+  }, [])
+
+  const spawnExhaleBlobs = useCallback(() => {
+    const cx = window.innerWidth  / 2
+    const cy = window.innerHeight * 0.44
+    const hw = window.innerWidth  / 2
+    const hh = window.innerHeight / 2
+
+    // 10 fast regular blobs — burst outward
+    const burst = Array.from({ length: 10 }, () => ({
+      id:       ++_pid,
+      cx, cy,
+      size:     Math.random() * 120 + 80,
+      driftX:   (Math.random() - 0.5) * 700,
+      driftY:   -(Math.random() * 380 + 80),
+      dur:      Math.random() * 1.5 + 2.8,
+      delay:    Math.random() * 0.5,
+      opacity:  Math.random() * 0.25 + 0.35,
+      animName: 'bigExhale',
+    }))
+
+    // 4 slow lingerers — one drifts toward each corner
+    const corners = [
+      { sx: -1, sy: -1 }, { sx:  1, sy: -1 },
+      { sx: -1, sy:  1 }, { sx:  1, sy:  1 },
+    ]
+    const linger = corners.map(({ sx, sy }) => ({
+      id:       ++_pid,
+      cx, cy,
+      size:     Math.random() * 80 + 120,           // larger, softer
+      driftX:   sx * (hw * 0.85 + Math.random() * hw * 0.3),
+      driftY:   sy * (hh * 0.75 + Math.random() * hh * 0.3),
+      dur:      Math.random() * 2.5 + 5.5,          // 5.5–8s
+      delay:    Math.random() * 0.8 + 0.2,
+      opacity:  Math.random() * 0.12 + 0.18,        // subtle
+      animName: 'smokeLinger',
+    }))
+
+    setExhaleBlobs(prev => [...prev, ...burst, ...linger])
+  }, [])
+
   const handleSmoke = useCallback(() => {
-    const realPuff = puffCount % MAX_CIG_PUFFS
-    const isNewCig = cigDone || (puffCount === 0 && realPuff === 0 && puffCount > 0)
+    startAudio()   // no-op after first call
+
+    // Puff sound — restart from beginning each click, exhale after 1s
+    if (puffAudioRef.current) {
+      puffAudioRef.current.currentTime = 0
+      puffAudioRef.current.play().catch(() => {})
+    }
+    setTimeout(spawnExhaleBlobs, 1000)
 
     if (cigDone) {
-      // Light a new cigarette
       setLightNew(true)
       setTimeout(() => setLightNew(false), 500)
     }
 
     setIsInhaling(true)
+    setHandPhase('inhale')
     setFlashing(true)
     setFlashKey(k => k + 1)
 
@@ -852,20 +1195,54 @@ export default function App() {
       return next
     })
 
-    setTimeout(() => { setIsInhaling(false); setFlashing(false) }, 550)
+    setTimeout(() => { setIsInhaling(false); setFlashing(false); setHandPhase('return') }, 420)
+    setTimeout(() => setHandPhase('bob'), 420 + 1200)
   }, [puffCount, cigDone])
+
+  const toggleMute = useCallback(e => {
+    e.stopPropagation()
+    if (!audioRef.current) return
+    const next = !muted
+    audioRef.current.muted = next
+    setMuted(next)
+  }, [muted])
 
   return (
     <div
-      onClick={handleSmoke}
       style={{
         position: 'fixed',
         inset: 0,
-        cursor: 'crosshair',
+        cursor: 'default',
         userSelect: 'none',
         animation: shaking ? 'screenShake 0.7s ease-out' : 'none',
       }}
     >
+      {/* ── Background music ── */}
+      <audio ref={audioRef} src="/sounds/bgmusic.mp3" loop preload="auto" />
+      <audio ref={puffAudioRef} src="/sounds/puff_sound.ogg" preload="auto" />
+
+      {/* ── Mute toggle ── */}
+      <button
+        onClick={toggleMute}
+        style={{
+          position: 'fixed',
+          top: 14,
+          right: 14,
+          zIndex: 100,
+          fontFamily: "'Press Start 2P', monospace",
+          fontSize: '9px',
+          color: muted ? '#555' : '#ff8800',
+          textShadow: muted ? 'none' : '0 0 6px #ff8800',
+          background: 'rgba(0,0,0,0.75)',
+          border: `2px solid ${muted ? '#333' : '#ff8800'}`,
+          padding: '6px 10px',
+          cursor: 'pointer',
+          letterSpacing: 1,
+        }}
+      >
+        {muted ? '[ MUTED ]' : '[ MUSIC ]'}
+      </button>
+
       <Scene isInhaling={isInhaling} puffCount={puffCount} />
 
       {/* Idle + burst smoke particles */}
@@ -890,13 +1267,31 @@ export default function App() {
         />
       ))}
 
+      {/* Big exhale blobs — spawn when puff sound ends */}
+      {exhaleBlobs.map(b => (
+        <ExhaleBlob
+          key={b.id}
+          cx={b.cx}
+          cy={b.cy}
+          size={b.size}
+          driftX={b.driftX}
+          driftY={b.driftY}
+          dur={b.dur}
+          delay={b.delay}
+          opacity={b.opacity}
+          animName={b.animName}
+          onDone={() => removeBlob(b.id)}
+        />
+      ))}
+
       <WeirdFilters puffCount={puffCount} />
       <FrownyLayer  puffCount={puffCount} />
 
       <Hand
-        isInhaling={isInhaling}
+        handPhase={handPhase}
         puffCount={puffCount % MAX_CIG_PUFFS === 0 && puffCount > 0 ? 0 : puffCount % MAX_CIG_PUFFS}
         lightNew={lightNew}
+        onClick={handleSmoke}
       />
 
       <CRTOverlay flashing={flashing} flashKey={flashKey} />
