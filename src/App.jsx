@@ -1404,7 +1404,7 @@ function InsideScene({ onExit }) {
           objectFit: 'cover',
           objectPosition: 'center 40%',
           imageRendering: 'pixelated',
-          filter: 'brightness(0.55) saturate(0.5) contrast(1.4) sepia(0.3)',
+          filter: 'brightness(0.85) saturate(0.6) contrast(1.3) sepia(0.2)',
         }}
       />
 
@@ -1817,7 +1817,7 @@ export default function App() {
       ))}
 
       {/* Exhale clouds */}
-      {exhales.map(e => (
+      {room === 'outside' && exhales.map(e => (
         <ExhaleCloud
           key={e.id}
           id={e.id}
@@ -1827,8 +1827,7 @@ export default function App() {
         />
       ))}
 
-      {/* Big exhale blobs — spawn when puff sound ends */}
-      {exhaleBlobs.map(b => (
+      {room === 'outside' && exhaleBlobs.map(b => (
         <ExhaleBlob
           key={b.id}
           cx={b.cx}
@@ -1844,23 +1843,25 @@ export default function App() {
         />
       ))}
 
-      <WeirdFilters puffCount={puffCount} />
-      <FrownyLayer  puffCount={puffCount} />
+      {room === 'outside' && <WeirdFilters puffCount={puffCount} />}
+      {room === 'outside' && <FrownyLayer  puffCount={puffCount} />}
 
-      <Hand
-        handPhase={handPhase}
-        puffCount={puffCount % MAX_CIG_PUFFS === 0 && puffCount > 0 ? 0 : puffCount % MAX_CIG_PUFFS}
-        lightNew={lightNew}
-        onClick={handleSmoke}
-      />
+      {room === 'outside' && (
+        <Hand
+          handPhase={handPhase}
+          puffCount={puffCount % MAX_CIG_PUFFS === 0 && puffCount > 0 ? 0 : puffCount % MAX_CIG_PUFFS}
+          lightNew={lightNew}
+          onClick={handleSmoke}
+        />
+      )}
 
-      <LeftHand leftHandPhase={leftHandPhase} onClick={handleSip} />
+      {room === 'outside' && <LeftHand leftHandPhase={leftHandPhase} onClick={handleSip} />}
 
-      {fizzBubbles.map(f => (
+      {room === 'outside' && fizzBubbles.map(f => (
         <FizzBubble key={f.id} x={f.x} y={f.y} onDone={() => removeFizz(f.id)} />
       ))}
 
-      {sipMessage && (
+      {room === 'outside' && sipMessage && (
         <div
           key={sipMsgKey}
           style={{
@@ -1885,13 +1886,15 @@ export default function App() {
 
       <CRTOverlay flashing={flashing} flashKey={flashKey} />
 
-      <HUD
-        puffCount={puffCount}
-        sipCount={sipCount}
-        message={message}
-        msgKey={msgKey}
-        cigDone={cigDone}
-      />
+      {room === 'outside' && (
+        <HUD
+          puffCount={puffCount}
+          sipCount={sipCount}
+          message={message}
+          msgKey={msgKey}
+          cigDone={cigDone}
+        />
+      )}
     </div>
     </div>
     </div>
