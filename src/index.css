@@ -233,6 +233,53 @@ body {
   100% { transform: translateY(-130px) translateX(var(--drift, 0px)) scale(0.2); opacity: 0; }
 }
 
+@keyframes roachWalk {
+  0%, 100% { transform: translateY(0px) scaleY(1); }
+  50%       { transform: translateY(-1px) scaleY(0.92); }
+}
+@keyframes roachPath1 {
+  0%   { left:  8%; top: 72%; }
+  25%  { left: 28%; top: 76%; }
+  50%  { left: 18%; top: 80%; }
+  75%  { left:  5%; top: 75%; }
+  100% { left:  8%; top: 72%; }
+}
+@keyframes roachPath2 {
+  0%   { left: 55%; top: 74%; }
+  20%  { left: 70%; top: 70%; }
+  45%  { left: 88%; top: 75%; }
+  70%  { left: 75%; top: 80%; }
+  100% { left: 55%; top: 74%; }
+}
+@keyframes roachPath3 {
+  0%   { left: 35%; top: 78%; }
+  30%  { left: 52%; top: 72%; }
+  60%  { left: 44%; top: 82%; }
+  80%  { left: 28%; top: 76%; }
+  100% { left: 35%; top: 78%; }
+}
+@keyframes roachPath4 {
+  0%   { left: 78%; top: 70%; }
+  25%  { left: 92%; top: 74%; }
+  55%  { left: 84%; top: 80%; }
+  80%  { left: 68%; top: 75%; }
+  100% { left: 78%; top: 70%; }
+}
+@keyframes roachPath5 {
+  0%   { left: 15%; top: 68%; }
+  30%  { left:  4%; top: 72%; }
+  60%  { left: 22%; top: 78%; }
+  85%  { left: 38%; top: 70%; }
+  100% { left: 15%; top: 68%; }
+}
+@keyframes roachPath6 {
+  0%   { left: 60%; top: 80%; }
+  25%  { left: 48%; top: 74%; }
+  55%  { left: 62%; top: 70%; }
+  80%  { left: 80%; top: 78%; }
+  100% { left: 60%; top: 80%; }
+}
+
 @keyframes boomboxBob {
   0%, 100% { transform: translateY(0px) rotate(-1deg); }
   50%       { transform: translateY(-7px) rotate(1deg); }

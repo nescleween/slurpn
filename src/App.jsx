@@ -672,6 +672,50 @@ function FrownyLayer({ puffCount }) {
 }
 
 // ─────────────────────────────────────────────
+// ROACH
+// ─────────────────────────────────────────────
+function Roach({ pathAnim, dur, delay, flip }) {
+  return (
+    <div style={{
+      position: 'absolute',
+      animation: `${pathAnim} ${dur}s linear ${delay}s infinite`,
+      zIndex: 3,
+      pointerEvents: 'none',
+    }}>
+      <svg
+        width="32" height="16"
+        viewBox="0 0 32 16"
+        style={{
+          display: 'block',
+          imageRendering: 'pixelated',
+          transform: flip ? 'scaleX(-1)' : 'none',
+          animation: 'roachWalk 0.18s ease-in-out infinite',
+        }}
+      >
+        {/* Abdomen */}
+        <ellipse cx="9"  cy="8" rx="8" ry="5" fill="#1e1008" />
+        <ellipse cx="9"  cy="7" rx="6" ry="3" fill="#2a1a0a" opacity="0.6" />
+        {/* Thorax */}
+        <ellipse cx="18" cy="8" rx="5" ry="4" fill="#2a1a0a" />
+        {/* Head */}
+        <ellipse cx="25" cy="8" rx="4" ry="3" fill="#1e1008" />
+        {/* Antennae */}
+        <line x1="28" y1="6" x2="32" y2="1" stroke="#1e1008" strokeWidth="1" />
+        <line x1="27" y1="6" x2="32" y2="3" stroke="#1e1008" strokeWidth="1" />
+        {/* Back legs */}
+        <line x1="7"  y1="6" x2="3"  y2="2"  stroke="#1e1008" strokeWidth="1.5" />
+        <line x1="7"  y1="8" x2="2"  y2="8"  stroke="#1e1008" strokeWidth="1.5" />
+        <line x1="7"  y1="10" x2="3" y2="14" stroke="#1e1008" strokeWidth="1.5" />
+        {/* Front legs */}
+        <line x1="16" y1="6" x2="13" y2="2"  stroke="#1e1008" strokeWidth="1.5" />
+        <line x1="16" y1="8" x2="11" y2="8"  stroke="#1e1008" strokeWidth="1.5" />
+        <line x1="16" y1="10" x2="13" y2="14" stroke="#1e1008" strokeWidth="1.5" />
+      </svg>
+    </div>
+  )
+}
+
+// ─────────────────────────────────────────────
 // STREET DOG
 // ─────────────────────────────────────────────
 function StreetDog() {
@@ -1089,6 +1133,14 @@ function Scene({ isInhaling, puffCount, onEnterDoor }) {
         pointerEvents: 'none',
         zIndex: 2,
       }} />
+
+      {/* ── Roaches on the building ── */}
+      <Roach pathAnim="roachPath1" dur={18} delay={0}   flip={false} />
+      <Roach pathAnim="roachPath2" dur={22} delay={3.5} flip={true}  />
+      <Roach pathAnim="roachPath3" dur={15} delay={7}   flip={false} />
+      <Roach pathAnim="roachPath4" dur={20} delay={1.5} flip={true}  />
+      <Roach pathAnim="roachPath5" dur={25} delay={5}   flip={false} />
+      <Roach pathAnim="roachPath6" dur={17} delay={9}   flip={true}  />
 
       <StreetDog />
     </div>
