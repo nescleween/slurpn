@@ -672,6 +672,179 @@ function FrownyLayer({ puffCount }) {
 }
 
 // ─────────────────────────────────────────────
+// STREET DOG
+// ─────────────────────────────────────────────
+function StreetDog() {
+  const [visible,   setVisible]   = useState(false)
+  const [x,         setX]         = useState(-100)
+  const [dir,       setDir]       = useState(1)
+  const [barkWord,  setBarkWord]  = useState('')
+  const rafRef      = useRef(null)
+  const xRef        = useRef(-100)
+  const timerRef    = useRef(null)
+
+  const makeBark = useCallback(() => {
+    try {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)()
+      ;[0, 0.2].forEach(offset => {
+        const osc  = ctx.createOscillator()
+        const gain = ctx.createGain()
+        osc.connect(gain)
+        gain.connect(ctx.destination)
+        osc.frequency.setValueAtTime(380, ctx.currentTime + offset)
+        osc.frequency.exponentialRampToValueAtTime(160, ctx.currentTime + offset + 0.13)
+        gain.gain.setValueAtTime(0.28, ctx.currentTime + offset)
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + offset + 0.15)
+        osc.start(ctx.currentTime + offset)
+        osc.stop(ctx.currentTime + offset + 0.16)
+      })
+    } catch(e) {}
+  }, [])
+
+  const spawnDog = useCallback(() => {
+    cancelAnimationFrame(rafRef.current)
+    const goRight  = Math.random() > 0.5
+    const startX   = goRight ? -100 : window.innerWidth + 20
+    const direction = goRight ? 1 : -1
+    xRef.current   = startX
+    setDir(direction)
+    setX(startX)
+    setVisible(true)
+
+    const words = ['WOOF!', 'ARF!', 'WOOF!']
+    words.forEach((word, i) => {
+      setTimeout(() => {
+        makeBark()
+        setBarkWord(word)
+        setTimeout(() => setBarkWord(''), 800)
+      }, 1400 + i * 2000)
+    })
+
+    const speed = 105
+    let last = null
+    const step = (ts) => {
+      if (!last) last = ts
+      const dt = Math.min((ts - last) / 1000, 0.05)
+      last = ts
+      xRef.current += direction * speed * dt
+      setX(xRef.current)
+      const offscreen = direction === 1
+        ? xRef.current > window.innerWidth + 20
+        : xRef.current < -100
+      if (offscreen) {
+        setVisible(false)
+        timerRef.current = setTimeout(spawnDog, 20000 + Math.random() * 15000)
+      } else {
+        rafRef.current = requestAnimationFrame(step)
+      }
+    }
+    rafRef.current = requestAnimationFrame(step)
+  }, [makeBark])
+
+  useEffect(() => {
+    timerRef.current = setTimeout(spawnDog, 5000 + Math.random() * 4000)
+    return () => {
+      clearTimeout(timerRef.current)
+      cancelAnimationFrame(rafRef.current)
+    }
+  }, [spawnDog])
+
+  if (!visible) return null
+
+  const flipped = dir === -1
+
+  return (
+    <div style={{
+      position: 'absolute',
+      left: x,
+      bottom: '13%',
+      width: 150,
+      zIndex: 3,
+      pointerEvents: 'none',
+    }}>
+      {barkWord && (
+        <div style={{
+          position: 'absolute',
+          bottom: '100%',
+          left: flipped ? 'auto' : 24,
+          right: flipped ? 24 : 'auto',
+          fontFamily: "'Press Start 2P', monospace",
+          fontSize: 11,
+          color: '#fff',
+          background: '#111',
+          border: '1.5px solid #ccc',
+          padding: '2px 5px',
+          whiteSpace: 'nowrap',
+          marginBottom: 3,
+          animation: 'dogBarkPop 0.8s ease forwards',
+          transform: flipped ? 'scaleX(-1)' : 'none',
+        }}>
+          {barkWord}
+        </div>
+      )}
+      <svg
+        width="150" height="98"
+        viewBox="0 0 80 52"
+        style={{ display: 'block', transform: flipped ? 'scaleX(-1)' : 'none', imageRendering: 'pixelated' }}
+      >
+        {/* Tail */}
+        <g style={{ transformOrigin: '10px 24px', animation: 'dogTailWag 0.38s ease-in-out infinite' }}>
+          <rect x="2" y="16" width="12" height="7" rx="3" fill="#7A5A10" />
+          <rect x="0" y="12" width="8" height="6" rx="2" fill="#6B4F0E" />
+        </g>
+
+        {/* Body */}
+        <rect x="8" y="22" width="40" height="15" rx="3" fill="#8B6B14" />
+
+        {/* Belly highlight */}
+        <rect x="12" y="30" width="28" height="5" rx="2" fill="#A07830" opacity="0.5" />
+
+        {/* Collar */}
+        <rect x="41" y="27" width="7" height="5" rx="1" fill="#cc1100" />
+        <rect x="43" y="32" width="4" height="4" rx="1" fill="#ffcc00" />
+
+        {/* Head */}
+        <rect x="44" y="13" width="23" height="19" rx="3" fill="#8B6B14" />
+
+        {/* Floppy ear */}
+        <rect x="49" y="7" width="11" height="15" rx="4" fill="#6B5010" />
+
+        {/* Snout */}
+        <rect x="63" y="22" width="13" height="7" rx="2" fill="#A07830" />
+        <rect x="72" y="23" width="4" height="3" rx="1" fill="#222" />
+
+        {/* Mouth line */}
+        <rect x="66" y="27" width="8" height="1" rx="0" fill="#6B4F0E" />
+
+        {/* Eye */}
+        <rect x="56" y="17" width="5" height="5" rx="1" fill="#111" />
+        <rect x="57" y="18" width="2" height="2" rx="0" fill="#fff" />
+
+        {/* Back legs */}
+        <g style={{ transformOrigin: '14px 37px', animation: 'dogLegA 0.36s ease-in-out infinite' }}>
+          <rect x="10" y="35" width="7" height="15" rx="2" fill="#7A5A10" />
+          <rect x="9"  y="48" width="9" height="3"  rx="1" fill="#5A4008" />
+        </g>
+        <g style={{ transformOrigin: '24px 37px', animation: 'dogLegB 0.36s ease-in-out infinite' }}>
+          <rect x="20" y="35" width="7" height="15" rx="2" fill="#7A5A10" />
+          <rect x="19" y="48" width="9" height="3"  rx="1" fill="#5A4008" />
+        </g>
+
+        {/* Front legs */}
+        <g style={{ transformOrigin: '34px 37px', animation: 'dogLegB 0.36s ease-in-out infinite' }}>
+          <rect x="30" y="35" width="7" height="15" rx="2" fill="#7A5A10" />
+          <rect x="29" y="48" width="9" height="3"  rx="1" fill="#5A4008" />
+        </g>
+        <g style={{ transformOrigin: '44px 37px', animation: 'dogLegA 0.36s ease-in-out infinite' }}>
+          <rect x="40" y="35" width="7" height="15" rx="2" fill="#7A5A10" />
+          <rect x="39" y="48" width="9" height="3"  rx="1" fill="#5A4008" />
+        </g>
+      </svg>
+    </div>
+  )
+}
+
+// ─────────────────────────────────────────────
 // SCENE — background + decorative elements
 // ─────────────────────────────────────────────
 function Scene({ isInhaling, puffCount, onEnterDoor }) {
@@ -916,6 +1089,8 @@ function Scene({ isInhaling, puffCount, onEnterDoor }) {
         pointerEvents: 'none',
         zIndex: 2,
       }} />
+
+      <StreetDog />
     </div>
   )
 }
@@ -1388,8 +1563,504 @@ function LeftHand({ leftHandPhase, onClick }) {
 // ─────────────────────────────────────────────
 // INSIDE SCENE
 // ─────────────────────────────────────────────
-function InsideScene({ onExit }) {
+// ─────────────────────────────────────────────
+// HANGOVER GUY
+// ─────────────────────────────────────────────
+function HangoverGuy({ onClicked }) {
+  const [intro, setIntro] = useState(true)
+  const [ugh, setUgh] = useState(false)
+  const [ughKey, setUghKey] = useState(0)
+  const [sad, setSad] = useState(false)
+  const [spraying, setSpraying] = useState(false)
+  const sadTimer = useRef(null)
+  const clickCountRef = useRef(0)
+
+  const SPRAY_PARTICLES = [
+    { dx: '-55vw', dy: '-85vh' },
+    { dx: '-28vw', dy: '-92vh' },
+    { dx:   '0vw', dy: '-95vh' },
+    { dx:  '28vw', dy: '-92vh' },
+    { dx:  '55vw', dy: '-85vh' },
+    { dx: '-60vw', dy: '-55vh' },
+    { dx:  '60vw', dy: '-55vh' },
+    { dx: '-45vw', dy: '-25vh' },
+    { dx:  '45vw', dy: '-25vh' },
+    { dx: '-20vw', dy: '-70vh' },
+    { dx:  '20vw', dy: '-70vh' },
+    { dx:   '8vw', dy: '-88vh' },
+  ]
+
+  const handleClick = useCallback(() => {
+    const sounds = ['/sounds/poodleaudio.ogg', '/sounds/madepoop.ogg', '/sounds/lifeaspoodleistough.ogg', '/sounds/mediumpoop.ogg', '/sounds/iwillnotpoop.ogg', '/sounds/letstalktopoodle.ogg']
+    const volumes = { '/sounds/iwillnotpoop.ogg': 0.35 }
+    const src = sounds[Math.floor(Math.random() * sounds.length)]
+    const audio = new Audio(src)
+    audio.volume = volumes[src] ?? 0.8
+    audio.play().catch(() => {})
+    setSad(true)
+    clearTimeout(sadTimer.current)
+    sadTimer.current = setTimeout(() => setSad(false), 6000)
+
+    clickCountRef.current += 1
+    if (clickCountRef.current % 3 === 0) {
+      setSpraying(true)
+      setTimeout(() => setSpraying(false), 2000)
+    }
+
+    onClicked()
+  }, [onClicked])
+
+  // Show intro speech on mount, then start random ughs after it's done
+  useEffect(() => {
+    const introDuration = 6000
+    const introTimer = setTimeout(() => setIntro(false), introDuration)
+
+    const schedule = () => {
+      const delay = 4000 + Math.random() * 5000
+      return setTimeout(() => {
+        setUghKey(k => k + 1)
+        setUgh(true)
+        setTimeout(() => setUgh(false), 2800)
+        schedule()
+      }, delay)
+    }
+    const ughTimer = setTimeout(() => schedule(), introDuration + 1000)
+
+    return () => {
+      clearTimeout(introTimer)
+      clearTimeout(ughTimer)
+    }
+  }, [])
+
+  const ughs = ['ugh...', 'oohhh...', 'my head...', 'never again', 'bleeugh']
+
+  return (
+    <div style={{
+      position: 'absolute',
+      left: '52%',
+      bottom: '14%',
+      transform: 'translateX(-50%)',
+      zIndex: 4,
+      pointerEvents: 'auto',
+      width: 180,
+      cursor: 'pointer',
+    }} onClick={handleClick}>
+      {/* Intro speech bubble */}
+      {intro && (
+        <div style={{
+          position: 'absolute',
+          bottom: '105%',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          fontFamily: "'Press Start 2P', monospace",
+          fontSize: 10,
+          color: '#eee',
+          background: '#111',
+          border: '2px solid #888',
+          padding: '12px 14px',
+          width: 300,
+          lineHeight: 2.2,
+          textAlign: 'center',
+          boxShadow: '0 0 12px rgba(0,0,0,0.8)',
+        }}>
+          my name is Poodle im so sorry about the smell it was not made from me
+          {/* speech bubble tail */}
+          <div style={{
+            position: 'absolute',
+            bottom: -10,
+            left: '50%',
+            transform: 'translateX(-50%)',
+            width: 0, height: 0,
+            borderLeft: '8px solid transparent',
+            borderRight: '8px solid transparent',
+            borderTop: '10px solid #888',
+          }} />
+          <div style={{
+            position: 'absolute',
+            bottom: -7,
+            left: '50%',
+            transform: 'translateX(-50%)',
+            width: 0, height: 0,
+            borderLeft: '6px solid transparent',
+            borderRight: '6px solid transparent',
+            borderTop: '8px solid #111',
+          }} />
+        </div>
+      )}
+
+      {/* Sad speech bubble */}
+      {sad && (
+        <div style={{
+          position: 'absolute',
+          bottom: '105%',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          fontFamily: "'Press Start 2P', monospace",
+          fontSize: 10,
+          color: '#99ccff',
+          background: '#0a0a1a',
+          border: '2px solid #4466aa',
+          padding: '12px 14px',
+          width: 280,
+          lineHeight: 2.2,
+          textAlign: 'center',
+          boxShadow: '0 0 16px rgba(80,120,255,0.3)',
+          animation: 'ughFloat 6s ease-out forwards',
+        }}>
+          ...i didnt do anything wrong
+          <div style={{
+            position: 'absolute',
+            bottom: -10, left: '50%',
+            transform: 'translateX(-50%)',
+            width: 0, height: 0,
+            borderLeft: '8px solid transparent',
+            borderRight: '8px solid transparent',
+            borderTop: '10px solid #4466aa',
+          }} />
+          <div style={{
+            position: 'absolute',
+            bottom: -7, left: '50%',
+            transform: 'translateX(-50%)',
+            width: 0, height: 0,
+            borderLeft: '6px solid transparent',
+            borderRight: '6px solid transparent',
+            borderTop: '8px solid #0a0a1a',
+          }} />
+        </div>
+      )}
+
+      {/* Poop spray — every 3 clicks */}
+      {spraying && SPRAY_PARTICLES.map((p, i) => (
+        <div key={i} style={{
+          position: 'absolute',
+          left: '48%',
+          bottom: '2%',
+          pointerEvents: 'none',
+          '--dx': p.dx,
+          '--dy': p.dy,
+          animation: 'poopSpray 1.6s ease-out forwards',
+          animationDelay: `${i * 35}ms`,
+          zIndex: 10,
+        }}>
+          <svg width="28" height="24" viewBox="0 0 52 44" style={{ display:'block', imageRendering:'pixelated' }}>
+            <ellipse cx="26" cy="38" rx="22" ry="7"  fill="#3d1f00" />
+            <ellipse cx="26" cy="32" rx="16" ry="9"  fill="#5a2d00" />
+            <ellipse cx="26" cy="22" rx="11" ry="8"  fill="#6b3600" />
+            <ellipse cx="26" cy="14" rx="7"  ry="7"  fill="#7a3e00" />
+            <ellipse cx="26" cy="9"  rx="4"  ry="5"  fill="#7a3e00" />
+            <ellipse cx="28" cy="5"  rx="3"  ry="3"  fill="#8a4800" />
+            <ellipse cx="22" cy="30" rx="4"  ry="2"  fill="#7a4a10" opacity="0.5" />
+          </svg>
+        </div>
+      ))}
+
+      {/* UGH float text */}
+      {!sad && ugh && (
+        <div key={ughKey} style={{
+          position: 'absolute',
+          top: -28,
+          left: '50%',
+          transform: 'translateX(-50%)',
+          fontFamily: "'Press Start 2P', monospace",
+          fontSize: 8,
+          color: '#88cc44',
+          textShadow: '0 0 8px #88cc44',
+          whiteSpace: 'nowrap',
+          animation: 'ughFloat 2.8s ease-out forwards',
+        }}>
+          {ughs[ughKey % ughs.length]}
+        </div>
+      )}
+
+      <svg
+        width="180" height="270"
+        viewBox="0 0 100 150"
+        style={{ display: 'block', imageRendering: 'pixelated' }}
+      >
+        {/* ── Dizzy stars spinning above head ── */}
+        <g style={{ transformOrigin: '50px 10px', animation: 'dizzySpin 1.4s linear infinite' }}>
+          <text x="32" y="14" fontSize="9" fill="#ffdd00" fontFamily="monospace">★</text>
+          <text x="52" y="8" fontSize="7" fill="#ff8800" fontFamily="monospace">✦</text>
+          <text x="64" y="14" fontSize="9" fill="#ffdd00" fontFamily="monospace">★</text>
+        </g>
+
+        {/* ── Whole body swaying ── */}
+        <g style={{ transformOrigin: '50px 90px', animation: 'hangoverSway 2.8s ease-in-out infinite' }}>
+
+          {/* Messy hair */}
+          <rect x="29" y="18" width="42" height="14" rx="2" fill="#221408" />
+          <rect x="27" y="20" width="8"  height="12" rx="2" fill="#2a1a0a" />
+          <rect x="65" y="19" width="9"  height="11" rx="2" fill="#2a1a0a" />
+          <rect x="37" y="12" width="7"  height="11" rx="2" fill="#1e1206" />
+          <rect x="50" y="10" width="6"  height="10" rx="2" fill="#2a1a0a" />
+          <rect x="58" y="13" width="5"  height="8"  rx="2" fill="#221408" />
+
+          {/* Head — sickly pale yellowish green */}
+          <rect x="29" y="26" width="42" height="40" rx="4" fill="#b8c870" />
+
+          {/* Cheek flush (green/sallow) */}
+          <rect x="30" y="46" width="9"  height="6" rx="3" fill="#98aa4a" opacity="0.55" />
+          <rect x="61" y="46" width="9"  height="6" rx="3" fill="#98aa4a" opacity="0.55" />
+
+          {/* ── Face dirt & smudges ── */}
+          <rect x="32" y="28" width="9"  height="5" rx="2" fill="#5a3a10" opacity="0.55" />
+          <rect x="38" y="32" width="5"  height="3" rx="1" fill="#4a2e0a" opacity="0.5" />
+          <rect x="60" y="30" width="7"  height="4" rx="2" fill="#5a3a10" opacity="0.5" />
+          <rect x="55" y="35" width="4"  height="3" rx="1" fill="#4a2e0a" opacity="0.45" />
+          <rect x="44" y="27" width="6"  height="3" rx="1" fill="#5a3a10" opacity="0.4" />
+          <rect x="35" y="55" width="8"  height="4" rx="2" fill="#6a4010" opacity="0.5" />
+          <rect x="58" y="52" width="6"  height="5" rx="2" fill="#5a3a10" opacity="0.45" />
+          <rect x="47" y="58" width="5"  height="3" rx="1" fill="#4a2e0a" opacity="0.5" />
+          {/* brown smear across nose bridge */}
+          <rect x="42" y="43" width="16" height="3" rx="1" fill="#6b4010" opacity="0.4" />
+
+          {/* Left eye — heavy droopy lid */}
+          <rect x="33" y="36" width="13" height="7" rx="1" fill="#d8d090" />
+          <rect x="35" y="39" width="9"  height="4" rx="1" fill="#1a1208" />
+          <rect x="36" y="40" width="3"  height="2" fill="#fff" opacity="0.5" />
+          <rect x="33" y="36" width="13" height="5" rx="1" fill="#a8b858" /> {/* heavy lid */}
+          <rect x="33" y="43" width="13" height="3" rx="1" fill="#8a9a40" opacity="0.7" /> {/* bag */}
+
+          {/* Right eye — half closed */}
+          <rect x="54" y="36" width="13" height="7" rx="1" fill="#d8d090" />
+          <rect x="56" y="39" width="9"  height="4" rx="1" fill="#1a1208" />
+          <rect x="63" y="40" width="3"  height="2" fill="#fff" opacity="0.5" />
+          <rect x="54" y="36" width="13" height="5" rx="1" fill="#a8b858" />
+          <rect x="54" y="43" width="13" height="3" rx="1" fill="#8a9a40" opacity="0.7" />
+
+          {/* Nose */}
+          <rect x="47" y="48" width="7" height="7" rx="2" fill="#a0b058" />
+          <rect x="45" y="52" width="4" height="3" rx="1" fill="#889040" />
+          <rect x="51" y="52" width="4" height="3" rx="1" fill="#889040" />
+
+          {/* Mouth — deep frown, queasy */}
+          <rect x="37" y="60" width="26" height="3" rx="1" fill="#7a8830" />
+          <rect x="36" y="57" width="5"  height="6" rx="1" fill="#7a8830" />
+          <rect x="59" y="57" width="5"  height="6" rx="1" fill="#7a8830" />
+
+          {/* Sweat drops */}
+          <rect x="28" y="30" width="4" height="7" rx="2" fill="#99ccee" opacity="0.85"
+            style={{ animation: 'sweatDrip 1.6s ease-in infinite' }} />
+          <rect x="69" y="34" width="3" height="6" rx="2" fill="#99ccee" opacity="0.75"
+            style={{ animation: 'sweatDrip 1.6s ease-in 0.7s infinite' }} />
+
+          {/* Sad tears — only when clicked */}
+          {sad && <>
+            <rect x="37" y="43" width="4" height="10" rx="2" fill="#66aaff" opacity="0.9"
+              style={{ animation: 'sweatDrip 0.7s ease-in infinite' }} />
+            <rect x="38" y="52" width="4" height="8"  rx="2" fill="#66aaff" opacity="0.75"
+              style={{ animation: 'sweatDrip 0.7s ease-in 0.25s infinite' }} />
+            <rect x="58" y="43" width="4" height="10" rx="2" fill="#66aaff" opacity="0.9"
+              style={{ animation: 'sweatDrip 0.7s ease-in 0.1s infinite' }} />
+            <rect x="59" y="52" width="4" height="8"  rx="2" fill="#66aaff" opacity="0.75"
+              style={{ animation: 'sweatDrip 0.7s ease-in 0.35s infinite' }} />
+          </>}
+
+          {/* Neck */}
+          <rect x="44" y="64" width="12" height="11" rx="1" fill="#aaba68" />
+
+          {/* Shirt — wrinkled, stained gray */}
+          <rect x="20" y="73" width="60" height="48" rx="3" fill="#3e3c4a" />
+          <rect x="39" y="73" width="22" height="7" rx="1" fill="#32303e" /> {/* collar */}
+          <rect x="34" y="82" width="3"  height="32" rx="1" fill="#323040" opacity="0.5" />
+          <rect x="50" y="80" width="2"  height="36" rx="1" fill="#323040" opacity="0.4" />
+          <rect x="62" y="84" width="3"  height="28" rx="1" fill="#323040" opacity="0.5" />
+          {/* ── Shirt dirt & poop stains ── */}
+          <rect x="44" y="95" width="14" height="9"  rx="3" fill="#2a2830" opacity="0.6" />
+          <rect x="28" y="88" width="10" height="7"  rx="3" fill="#6b3a08" opacity="0.65" />
+          <rect x="30" y="93" width="6"  height="4"  rx="2" fill="#7a4410" opacity="0.55" />
+          <rect x="60" y="82" width="12" height="8"  rx="3" fill="#5a3008" opacity="0.6" />
+          <rect x="65" y="88" width="7"  height="5"  rx="2" fill="#6b3a08" opacity="0.5" />
+          <rect x="40" y="108" width="18" height="7" rx="3" fill="#6b3a08" opacity="0.7" />
+          <rect x="50" y="112" width="8"  height="4" rx="2" fill="#7a4410" opacity="0.55" />
+          <rect x="24" y="100" width="8"  height="6" rx="2" fill="#5a3008" opacity="0.5" />
+          <rect x="68" y="98" width="9"  height="5"  rx="2" fill="#6b3a08" opacity="0.55" />
+          {/* big poop smear center chest */}
+          <rect x="43" y="78" width="16" height="6"  rx="2" fill="#7a4410" opacity="0.6" />
+          <rect x="46" y="82" width="10" height="4"  rx="2" fill="#5a2e08" opacity="0.55" />
+
+          {/* Left arm — elbow on knee, hand on forehead */}
+          <rect x="10" y="76" width="12" height="35" rx="3" fill="#3e3c4a" />
+          <rect x="6"  y="66" width="18" height="13" rx="3" fill="#b0bc6a" /> {/* hand on head */}
+
+          {/* Right arm — hanging limp */}
+          <rect x="78" y="76" width="12" height="42" rx="3" fill="#3e3c4a" />
+          <rect x="76" y="113" width="16" height="9" rx="2" fill="#b0bc6a" />
+
+          {/* Pants — slumped sit */}
+          <rect x="18" y="119" width="64" height="20" rx="2" fill="#22284a" />
+          <rect x="12" y="134" width="28" height="14" rx="2" fill="#22284a" />
+          <rect x="60" y="134" width="28" height="14" rx="2" fill="#22284a" />
+          {/* pants dirt */}
+          <rect x="22" y="122" width="14" height="7" rx="2" fill="#6b3a08" opacity="0.55" />
+          <rect x="56" y="124" width="10" height="6" rx="2" fill="#5a3008" opacity="0.5" />
+          <rect x="38" y="120" width="8"  height="5" rx="2" fill="#6b3a08" opacity="0.45" />
+          <rect x="14" y="136" width="10" height="5" rx="2" fill="#6b3a08" opacity="0.5" />
+          <rect x="72" y="138" width="10" height="4" rx="2" fill="#5a3008" opacity="0.5" />
+
+          {/* Shoes */}
+          <rect x="8"  y="146" width="34" height="7" rx="2" fill="#141008" />
+          <rect x="58" y="146" width="34" height="7" rx="2" fill="#141008" />
+          {/* mud on shoes */}
+          <rect x="8"  y="146" width="14" height="7" rx="2" fill="#5a3a10" opacity="0.5" />
+          <rect x="70" y="146" width="12" height="7" rx="2" fill="#5a3a10" opacity="0.45" />
+
+        </g>
+
+        {/* ── Bottles on floor (not swaying) ── */}
+        {/* Green bottle */}
+        <rect x="1"  y="128" width="5"  height="4"  rx="1" fill="#1a4a1a" />
+        <rect x="0"  y="124" width="4"  height="5"  rx="1" fill="#1a4a1a" />
+        <rect x="-1" y="131" width="13" height="22" rx="2" fill="#226622" />
+        <rect x="1"  y="140" width="9"  height="8"  rx="1" fill="#1a5018" opacity="0.6" />
+
+        {/* Tipped-over can */}
+        <rect x="84" y="138" width="20" height="12" rx="2" fill="#cc8820" />
+        <rect x="84" y="138" width="5"  height="12" rx="1" fill="#ddaa30" />
+        <rect x="99" y="138" width="5"  height="12" rx="1" fill="#aa6810" />
+        <rect x="86" y="140" width="14" height="8"  rx="0" fill="#ee9922" opacity="0.3" />
+
+        {/* Puddle under can */}
+        <ellipse cx="94" cy="150" rx="14" ry="3" fill="#aa6010" opacity="0.35" />
+
+      </svg>
+    </div>
+  )
+}
+
+function PoopPile({ size = 1, style = {} }) {
+  const s = size
+  return (
+    <div style={{ pointerEvents: 'none', ...style }}>
+      <svg width={52 * s} height={44 * s} viewBox="0 0 52 44" style={{ display: 'block', imageRendering: 'pixelated' }}>
+        {/* base mound */}
+        <ellipse cx="26" cy="38" rx="22" ry="7" fill="#3d1f00" />
+        {/* tier 1 */}
+        <ellipse cx="26" cy="32" rx="16" ry="9" fill="#5a2d00" />
+        {/* tier 2 */}
+        <ellipse cx="26" cy="22" rx="11" ry="8" fill="#6b3600" />
+        {/* tier 3 / swirl top */}
+        <ellipse cx="26" cy="14" rx="7"  ry="7" fill="#7a3e00" />
+        <ellipse cx="26" cy="9"  rx="4"  ry="5" fill="#7a3e00" />
+        <ellipse cx="28" cy="5"  rx="3"  ry="3" fill="#8a4800" />
+        {/* shine */}
+        <ellipse cx="22" cy="30" rx="4" ry="2" fill="#7a4a10" opacity="0.5" />
+        {/* flies */}
+        <rect x="8"  y="10" width="3" height="2" rx="1" fill="#111" opacity="0.7" />
+        <rect x="40" y="14" width="3" height="2" rx="1" fill="#111" opacity="0.7" />
+      </svg>
+    </div>
+  )
+}
+
+function Boombox({ onClick, isSlowed }) {
+  return (
+    <div
+      onClick={onClick}
+      style={{
+        position: 'absolute',
+        left: '63%',
+        bottom: '15%',
+        zIndex: 4,
+        cursor: 'pointer',
+      }}
+    >
+      {/* Label sits outside the animated wrapper so it doesn't inherit rotation */}
+      {isSlowed && (
+        <div style={{
+          position: 'absolute',
+          bottom: '100%',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          marginBottom: 6,
+          fontFamily: "'Press Start 2P', monospace",
+          fontSize: 6,
+          color: '#cc99ff',
+          textShadow: '0 0 8px #aa88ff, 0 0 20px #8844cc',
+          whiteSpace: 'nowrap',
+          fontSize: 10,
+          letterSpacing: 2,
+        }}>SLOWED</div>
+      )}
+
+      {/* Animated wrapper */}
+      <div style={{ animation: `boomboxBob ${isSlowed ? '1.4s' : '0.55s'} ease-in-out infinite` }}>
+      {/* Floating music notes */}
+      <div style={{ position:'absolute', top:-36, left:18, fontFamily:'monospace', fontSize:16, color:'#ffcc00', textShadow:'0 0 6px #ffaa00', animation:'musicNoteFloat 1.6s ease-out infinite' }}>♪</div>
+      <div style={{ position:'absolute', top:-28, left:50, fontFamily:'monospace', fontSize:13, color:'#ff8800', textShadow:'0 0 6px #ff6600', animation:'musicNoteFloat 1.6s ease-out 0.55s infinite' }}>♫</div>
+      <div style={{ position:'absolute', top:-40, left:72, fontFamily:'monospace', fontSize:11, color:'#ffcc00', textShadow:'0 0 6px #ffaa00', animation:'musicNoteFloat 1.6s ease-out 1.1s infinite' }}>♪</div>
+
+      <svg width="120" height="80" viewBox="0 0 120 80" style={{ display:'block', imageRendering:'pixelated' }}>
+        {/* Handle */}
+        <rect x="42" y="2"  width="36" height="6" rx="3" fill="#2a2a2a" />
+        <rect x="38" y="6"  width="5"  height="12" rx="2" fill="#333" />
+        <rect x="77" y="6"  width="5"  height="12" rx="2" fill="#333" />
+
+        {/* Antenna */}
+        <rect x="104" y="1" width="3" height="20" rx="1" fill="#444" />
+        <ellipse cx="105" cy="1" rx="3" ry="3" fill="#ff2200" />
+
+        {/* Body */}
+        <rect x="4"  y="16" width="112" height="58" rx="4" fill="#1a1a1a" />
+        <rect x="6"  y="18" width="108" height="54" rx="3" fill="#242424" />
+        {/* top highlight */}
+        <rect x="6"  y="18" width="108" height="3"  rx="2" fill="#333" opacity="0.6" />
+
+        {/* Left speaker */}
+        <rect x="8"  y="21" width="34" height="46" rx="3" fill="#111" />
+        <circle cx="25" cy="44" r="14" fill="#0d0d0d" />
+        <circle cx="25" cy="44" r="11" fill="#111" stroke="#2a2a2a" strokeWidth="1.5" />
+        <circle cx="25" cy="44" r="7"  fill="#0d0d0d" />
+        <circle cx="25" cy="44" r="4"  fill="#1a1a1a" />
+        <circle cx="25" cy="44" r="1.5" fill="#444" />
+
+        {/* Right speaker */}
+        <rect x="78" y="21" width="34" height="46" rx="3" fill="#111" />
+        <circle cx="95" cy="44" r="14" fill="#0d0d0d" />
+        <circle cx="95" cy="44" r="11" fill="#111" stroke="#2a2a2a" strokeWidth="1.5" />
+        <circle cx="95" cy="44" r="7"  fill="#0d0d0d" />
+        <circle cx="95" cy="44" r="4"  fill="#1a1a1a" />
+        <circle cx="95" cy="44" r="1.5" fill="#444" />
+
+        {/* Center panel */}
+        <rect x="44" y="21" width="32" height="46" rx="2" fill="#1c1c1c" />
+
+        {/* Tape deck window */}
+        <rect x="47" y="24" width="26" height="18" rx="2" fill="#0a0a0a" />
+        <rect x="48" y="25" width="24" height="16" rx="1" fill="#111" />
+        {/* tape reels */}
+        <circle cx="54" cy="33" r="5" fill="#1a1a1a" stroke="#333" strokeWidth="1" />
+        <circle cx="54" cy="33" r="2" fill="#333" />
+        <circle cx="66" cy="33" r="5" fill="#1a1a1a" stroke="#333" strokeWidth="1" />
+        <circle cx="66" cy="33" r="2" fill="#333" />
+        {/* tape between reels */}
+        <rect x="56" y="35" width="8" height="2" rx="1" fill="#222" />
+
+        {/* LCD display */}
+        <rect x="47" y="45" width="26" height="8" rx="1" fill="#002200" />
+        <rect x="48" y="46" width="7"  height="6" fill="#00cc00" opacity="0.9" />
+        <rect x="56" y="46" width="5"  height="6" fill="#009900" opacity="0.7" />
+        <rect x="62" y="46" width="7"  height="6" fill="#00cc00" opacity="0.9" />
+        <rect x="70" y="46" width="2"  height="6" fill="#007700" opacity="0.5" />
+
+        {/* Buttons */}
+        <rect x="47" y="56" width="5" height="4" rx="1" fill="#cc0000" />
+        <rect x="54" y="56" width="5" height="4" rx="1" fill="#2a2a2a" />
+        <rect x="61" y="56" width="5" height="4" rx="1" fill="#2a2a2a" />
+        <rect x="68" y="56" width="5" height="4" rx="1" fill="#2a2a2a" />
+
+        {/* Volume knob */}
+        <circle cx="60" cy="65" rx="5" ry="5" fill="#1a1a1a" stroke="#333" strokeWidth="1" />
+        <rect x="59" y="61" width="2" height="4" rx="1" fill="#555" />
+      </svg>
+      </div>{/* end animated wrapper */}
+    </div>
+  )
+}
+
+function InsideScene({ onExit, onBoomboxClick, insideTrack }) {
   const [exitHovered, setExitHovered] = useState(false)
+  const [poodleClicks, setPoodleClicks] = useState(0)
 
   return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 0 }}>
@@ -1450,19 +2121,64 @@ function InsideScene({ onExit }) {
         }}
       />
 
-      {/* ── Exit hint ── */}
-      {exitHovered && (
-        <div style={{
+      {/* ── Exit hint — always visible, brighter on hover ── */}
+      <div
+        onMouseEnter={() => setExitHovered(true)}
+        onMouseLeave={() => setExitHovered(false)}
+        onClick={onExit}
+        style={{
           position: 'absolute',
           left: '2%', top: '16%',
           fontFamily: "'Press Start 2P', monospace",
           fontSize: 8,
-          color: '#ff8800',
-          textShadow: '0 0 8px #ff8800',
+          color: exitHovered ? '#ff8800' : '#ff6600',
+          textShadow: exitHovered ? '0 0 8px #ff8800' : '0 0 6px #ff4400',
+          opacity: exitHovered ? 1 : 0.9,
+          transition: 'all 0.15s ease',
           zIndex: 5,
-          pointerEvents: 'none',
+          cursor: exitHovered ? 'pointer' : 'default',
         }}>[ EXIT ]</div>
-      )}
+
+      {/* ── Poop piles scattered around (Poodle has been busy) ── */}
+      <PoopPile size={1.1} style={{ position:'absolute', left:'4%',  bottom:'8%',  zIndex:4 }} />
+      <PoopPile size={0.7} style={{ position:'absolute', left:'12%', bottom:'6%',  zIndex:4 }} />
+      <PoopPile size={1.3} style={{ position:'absolute', left:'22%', bottom:'7%',  zIndex:4 }} />
+      <PoopPile size={0.6} style={{ position:'absolute', left:'34%', bottom:'5%',  zIndex:4 }} />
+      <PoopPile size={0.9} style={{ position:'absolute', left:'68%', bottom:'8%',  zIndex:4 }} />
+      <PoopPile size={1.2} style={{ position:'absolute', left:'78%', bottom:'6%',  zIndex:4 }} />
+      <PoopPile size={0.7} style={{ position:'absolute', left:'88%', bottom:'9%',  zIndex:4 }} />
+      <PoopPile size={0.5} style={{ position:'absolute', left:'92%', bottom:'5%',  zIndex:4 }} />
+      <PoopPile size={0.8} style={{ position:'absolute', left:'8%',  bottom:'20%', zIndex:4 }} />
+      <PoopPile size={0.6} style={{ position:'absolute', left:'82%', bottom:'22%', zIndex:4 }} />
+      <PoopPile size={1.0} style={{ position:'absolute', left:'55%', bottom:'10%', zIndex:4 }} />
+
+      <Boombox onClick={onBoomboxClick} isSlowed={insideTrack === 'slowed'} />
+
+      <HangoverGuy onClicked={() => setPoodleClicks(c => c + 1)} />
+
+      {/* ── Poodle click counter ── */}
+      <div style={{
+        position: 'absolute',
+        top: '12%',
+        left: '50%',
+        transform: 'translateX(-50%)',
+        fontFamily: "'Press Start 2P', monospace",
+        fontSize: 9,
+        color: '#ff8800',
+        textShadow: '0 0 8px #ff8800, 0 0 20px #ff4400',
+        zIndex: 5,
+        pointerEvents: 'none',
+        textAlign: 'center',
+        lineHeight: 2,
+        border: '2px solid #ff440044',
+        padding: '6px 12px',
+        background: 'rgba(0,0,0,0.55)',
+      }}>
+        <div style={{ fontSize: 7, opacity: 0.7, marginBottom: 4 }}>POODLE ABUSE COUNT</div>
+        <div style={{ fontSize: 20, color: '#ffcc00', textShadow: '0 0 12px #ffcc00' }}>
+          {String(poodleClicks).padStart(3, '0')}
+        </div>
+      </div>
 
       {/* ── Location label ── */}
       <div style={{
@@ -1513,20 +2229,68 @@ export default function App() {
 
   // ── Background music ──────────────────────────
   const audioRef = useRef(null)
+  const insideAudioRef = useRef(null)
+  const insideSlowedRef = useRef(null)
+  const [insideTrack, setInsideTrack] = useState('normal')
   const puffAudioRef = useRef(null)
   const slurpAudioRef = useRef(null)
   const burpAudioRef = useRef(null)
   const coughAudioRef = useRef(null)
   const audioStarted = useRef(false)
+  const roomRef      = useRef('outside') // mirrors `room` for use in closures
+
+  // Keep roomRef in sync
+  useEffect(() => { roomRef.current = room }, [room])
 
   const startAudio = useCallback(() => {
     if (audioStarted.current || !audioRef.current) return
+    if (roomRef.current !== 'outside') return
     audioStarted.current = true
     audioRef.current.play().catch(() => {})
   }, [])
 
-  // Try autoplay on mount; browsers may block it — we catch silently
-  // and fall back to starting on first click.
+  // Swap music when room changes — hard-stop whichever track should be silent
+  useEffect(() => {
+    const outside = audioRef.current
+    const normal  = insideAudioRef.current
+    const slowed  = insideSlowedRef.current
+    if (!outside || !normal) return
+    if (room === 'inside') {
+      outside.pause()
+      outside.currentTime = 0
+      const activeInside = insideTrack === 'slowed' && slowed ? slowed : normal
+      activeInside.currentTime = 0
+      activeInside.volume = 0.2
+      activeInside.play().catch(() => {})
+    } else {
+      normal.pause()
+      normal.currentTime = 0
+      if (slowed) { slowed.pause(); slowed.currentTime = 0 }
+      outside.volume = 0.45
+      outside.play().catch(() => {})
+    }
+  }, [room])
+
+  const handleBoomboxClick = useCallback(() => {
+    const normal = insideAudioRef.current
+    const slowed = insideSlowedRef.current
+    if (!normal || !slowed) return
+    if (insideTrack === 'normal') {
+      normal.pause()
+      slowed.currentTime = 0
+      slowed.volume = 0.2
+      slowed.play().catch(() => {})
+      setInsideTrack('slowed')
+    } else {
+      slowed.pause()
+      normal.currentTime = 0
+      normal.volume = 0.2
+      normal.play().catch(() => {})
+      setInsideTrack('normal')
+    }
+  }, [insideTrack])
+
+  // Try autoplay on mount; browsers may block it — fall back to first interaction.
   useEffect(() => {
     const audio = audioRef.current
     if (!audio) return
@@ -1534,7 +2298,20 @@ export default function App() {
     audio.play().then(() => {
       audioStarted.current = true
     }).catch(() => {
-      // Blocked — will start on first click via startAudio()
+      // Blocked by browser — start on first user interaction, but only if outside
+      const unlock = () => {
+        if (audioStarted.current) return
+        audioStarted.current = true
+        if (roomRef.current === 'outside') {
+          audio.play().catch(() => {})
+        }
+        window.removeEventListener('click', unlock)
+        window.removeEventListener('keydown', unlock)
+        window.removeEventListener('touchstart', unlock)
+      }
+      window.addEventListener('click', unlock)
+      window.addEventListener('keydown', unlock)
+      window.addEventListener('touchstart', unlock)
     })
   }, [])
 
@@ -1727,6 +2504,8 @@ export default function App() {
     <>
     {/* ── Audio — always mounted so music survives portrait/landscape switch ── */}
     <audio ref={audioRef} src="/sounds/bgmusic.mp3" loop preload="auto" />
+    <audio ref={insideAudioRef} src="/sounds/Las Ketchup-bgmusic.mp3" loop preload="auto" />
+    <audio ref={insideSlowedRef} src="/sounds/Las Ketchup-bgmusic-slowedandreverb.wav" loop preload="auto" />
     <audio ref={puffAudioRef} src="/sounds/puff_sound.ogg" preload="auto" />
     <audio ref={slurpAudioRef} src="/sounds/energyslurp.ogg" preload="auto" />
     <audio ref={burpAudioRef} src="/sounds/burp.ogg" preload="auto" />
@@ -1798,15 +2577,19 @@ export default function App() {
             setRoomFlash(true)
             setTimeout(() => { setRoom('inside'); setRoomFlash(false) }, 400)
           }} />
-        : <InsideScene onExit={() => {
-            setRoomFlash(true)
-            setTimeout(() => { setRoom('outside'); setRoomFlash(false) }, 400)
-          }} />
+        : <InsideScene
+            onExit={() => {
+              setRoomFlash(true)
+              setTimeout(() => { setRoom('outside'); setRoomFlash(false) }, 400)
+            }}
+            onBoomboxClick={handleBoomboxClick}
+            insideTrack={insideTrack}
+          />
       }
       {roomFlash && <div style={{ position:'fixed', inset:0, background:'#000', zIndex:999, opacity:1, pointerEvents:'none' }}/>}
 
       {/* Idle + burst smoke particles */}
-      {particles.map(p => (
+      {room === 'outside' && particles.map(p => (
         <SmokeParticle
           key={p.id}
           x={p.x}
