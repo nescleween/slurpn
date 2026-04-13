@@ -674,16 +674,17 @@ function FrownyLayer({ puffCount }) {
 // ─────────────────────────────────────────────
 // SCENE — background + decorative elements
 // ─────────────────────────────────────────────
-function Scene({ isInhaling, puffCount }) {
+function Scene({ isInhaling, puffCount, onEnterDoor }) {
   const trippy = puffCount >= 40
   const buzzed  = puffCount >= 25
+  const [doorHovered, setDoorHovered] = useState(false)
 
   return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 0 }}>
 
       {/* ── Background photo ── */}
       <img
-        src="/stationbg.jpg"
+        src="/images/stationbg.jpg"
         alt=""
         style={{
           width: '100%',
@@ -702,6 +703,26 @@ function Scene({ isInhaling, puffCount }) {
             : 'brightness(0.7) saturate(0.6) contrast(1.35) sepia(0.25)',
           transition: 'filter 0.5s ease',
           animation: trippy ? 'glitch 2s infinite' : 'none',
+        }}
+      />
+
+      {/* ── Door hitbox — adjust left/top/width/height to line up with the door ── */}
+      <div
+        onMouseEnter={() => setDoorHovered(true)}
+        onMouseLeave={() => setDoorHovered(false)}
+        onClick={onEnterDoor}
+        style={{
+          position: 'absolute',
+          left: '68%',
+          top: '22%',
+          width: '8%',
+          height: '46%',
+          cursor: doorHovered ? 'pointer' : 'default',
+          border: doorHovered ? '2px solid rgba(255,160,30,0.7)' : '2px solid transparent',
+          background: doorHovered ? 'rgba(255,140,0,0.10)' : 'transparent',
+          boxShadow: doorHovered ? 'inset 0 0 24px rgba(255,140,0,0.18), 0 0 12px rgba(255,140,0,0.25)' : 'none',
+          transition: 'all 0.15s ease',
+          zIndex: 2,
         }}
       />
 
@@ -1364,11 +1385,111 @@ function LeftHand({ leftHandPhase, onClick }) {
 }
 
 // ─────────────────────────────────────────────
+// ─────────────────────────────────────────────
+// INSIDE SCENE
+// ─────────────────────────────────────────────
+function InsideScene({ onExit }) {
+  const [exitHovered, setExitHovered] = useState(false)
+
+  return (
+    <div style={{ position: 'fixed', inset: 0, zIndex: 0 }}>
+
+      {/* ── Background photo ── */}
+      <img
+        src="/images/insidebg.jpg"
+        alt=""
+        style={{
+          width: '100%',
+          height: '100%',
+          objectFit: 'cover',
+          objectPosition: 'center 40%',
+          imageRendering: 'pixelated',
+          filter: 'brightness(0.55) saturate(0.5) contrast(1.4) sepia(0.3)',
+        }}
+      />
+
+      {/* ── Pixelation / dither grid overlay ── */}
+      <div style={{
+        position: 'absolute', inset: 0,
+        backgroundImage:
+          'linear-gradient(transparent 3px, rgba(0,0,0,0.06) 3px), ' +
+          'linear-gradient(90deg, transparent 3px, rgba(0,0,0,0.06) 3px)',
+        backgroundSize: '4px 4px',
+        pointerEvents: 'none', zIndex: 1,
+      }}/>
+
+      {/* ── Vignette ── */}
+      <div style={{
+        position: 'absolute', inset: 0,
+        background: 'radial-gradient(ellipse at 50% 50%, transparent 40%, rgba(0,0,0,0.82) 100%)',
+        pointerEvents: 'none', zIndex: 2,
+      }}/>
+
+      {/* ── Scanline flicker ── */}
+      <div style={{
+        position: 'absolute', inset: 0,
+        backgroundImage: 'repeating-linear-gradient(0deg, rgba(0,0,0,0.13) 0px, rgba(0,0,0,0.13) 1px, transparent 1px, transparent 3px)',
+        pointerEvents: 'none', zIndex: 3,
+      }}/>
+
+      {/* ── Exit door hitbox (the front windows/door area on the left) ── */}
+      <div
+        onMouseEnter={() => setExitHovered(true)}
+        onMouseLeave={() => setExitHovered(false)}
+        onClick={onExit}
+        style={{
+          position: 'absolute',
+          left: '2%', top: '20%',
+          width: '18%', height: '55%',
+          cursor: exitHovered ? 'pointer' : 'default',
+          border: exitHovered ? '2px solid rgba(255,160,30,0.7)' : '2px solid transparent',
+          background: exitHovered ? 'rgba(255,140,0,0.08)' : 'transparent',
+          boxShadow: exitHovered ? 'inset 0 0 24px rgba(255,140,0,0.15), 0 0 12px rgba(255,140,0,0.2)' : 'none',
+          transition: 'all 0.15s ease',
+          zIndex: 4,
+        }}
+      />
+
+      {/* ── Exit hint ── */}
+      {exitHovered && (
+        <div style={{
+          position: 'absolute',
+          left: '2%', top: '16%',
+          fontFamily: "'Press Start 2P', monospace",
+          fontSize: 8,
+          color: '#ff8800',
+          textShadow: '0 0 8px #ff8800',
+          zIndex: 5,
+          pointerEvents: 'none',
+        }}>[ EXIT ]</div>
+      )}
+
+      {/* ── Location label ── */}
+      <div style={{
+        position: 'absolute',
+        bottom: 18, right: 18,
+        fontFamily: "'Press Start 2P', monospace",
+        fontSize: 7,
+        color: '#ff4400',
+        textShadow: '0 0 8px #ff4400',
+        opacity: 0.7,
+        zIndex: 5,
+        pointerEvents: 'none',
+        letterSpacing: 1,
+      }}>CLOWN EGGS GAS — INTERIOR</div>
+
+    </div>
+  )
+}
+
+// ─────────────────────────────────────────────
 // APP
 // ─────────────────────────────────────────────
 let _pid = 0
 
 export default function App() {
+  const [room,        setRoom]        = useState('outside') // 'outside' | 'inside'
+  const [roomFlash,   setRoomFlash]   = useState(false)
   const [puffCount,   setPuffCount]   = useState(0)
   const [isInhaling,  setIsInhaling]  = useState(false)
   const [particles,   setParticles]   = useState([])
@@ -1672,7 +1793,17 @@ export default function App() {
         {muted ? '[ MUTED ]' : '[ MUSIC ]'}
       </button>
 
-      <Scene isInhaling={isInhaling} puffCount={puffCount} />
+      {room === 'outside'
+        ? <Scene isInhaling={isInhaling} puffCount={puffCount} onEnterDoor={() => {
+            setRoomFlash(true)
+            setTimeout(() => { setRoom('inside'); setRoomFlash(false) }, 400)
+          }} />
+        : <InsideScene onExit={() => {
+            setRoomFlash(true)
+            setTimeout(() => { setRoom('outside'); setRoomFlash(false) }, 400)
+          }} />
+      }
+      {roomFlash && <div style={{ position:'fixed', inset:0, background:'#000', zIndex:999, opacity:1, pointerEvents:'none' }}/>}
 
       {/* Idle + burst smoke particles */}
       {particles.map(p => (
